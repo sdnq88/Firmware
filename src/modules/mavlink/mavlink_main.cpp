@@ -133,7 +133,6 @@ Mavlink::Mavlink() :
 	_main_loop_delay(1000),
 	_subscriptions(nullptr),
 	_streams(nullptr),
-	_mission_manager(nullptr),
 	_parameters_manager(nullptr),
 	_mode(MAVLINK_MODE_NORMAL),
 	_channel(MAVLINK_COMM_0),
@@ -935,11 +934,6 @@ Mavlink::resend_message(mavlink_message_t *msg)
 void
 Mavlink::handle_message(const mavlink_message_t *msg)
 {
-	/* handle packet with mission manager */
-	if (_mission_manager != nullptr) {
-		_mission_manager->handle_message(msg);
-	}
-
 	/* handle packet with parameter component */
 	if (_parameters_manager != nullptr) {
 		_parameters_manager->handle_message(msg);
@@ -1521,14 +1515,6 @@ Mavlink::task_main(int argc, char *argv[])
 		_parameters_manager = (MavlinkParametersManager *) MavlinkParametersManager::new_instance(this);
 		_parameters_manager->set_interval(interval_from_rate(30.0f));
 		LL_APPEND(_streams, _parameters_manager);
-
-		/* MISSION_STREAM stream, actually sends all MISSION_XXX messages at some rate depending on
-		 * remote requests rate. Rate specified here controls how much bandwidth we will reserve for
-		 * mission messages. */
-		_mission_manager = (MavlinkMissionManager *) MavlinkMissionManager::new_instance(this);
-		_mission_manager->set_interval(interval_from_rate(10.0f));
-		_mission_manager->set_verbose(_verbose);
-		LL_APPEND(_streams, _mission_manager);
 	}
 
 	float param_value = -2.0f;
