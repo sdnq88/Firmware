@@ -68,52 +68,53 @@ else
 	tone_alarm "MBT200 O2f#8d8g#8<b8p"
 fi
 
-# Do IO checks as early as possible while IO chip is in bootloader mode
-set IO_PRESENT no
-if test -e $IO_FILE
-then
-	## Uncomment these lines to force IO update in any case
-	# px4io forceupdate 14662 $IO_FILE
-	# usleep 2000000
-
-	if px4io checkcrc $IO_FILE
-	then
-		echo "[init] PX4IO CRC OK"
-		echo "PX4IO CRC OK" >> $LOG_FILE
-
-		set IO_PRESENT yes
-	else
-		echo "[init] Trying to update"
-		echo "PX4IO Trying to update" >> $LOG_FILE
-
-		tone_alarm MLL32CP8MB
-
-		if px4io forceupdate 14662 $IO_FILE
-		then
-			usleep 500000
-			if px4io checkcrc $IO_FILE
-			then
-				echo "[init] PX4IO CRC OK, update successful"
-				echo "PX4IO CRC OK after updating" >> $LOG_FILE
-				tone_alarm MLL8CDE
-
-				set IO_PRESENT yes
-			else
-				echo "[init] ERROR: PX4IO update failed"
-				echo "PX4IO update failed" >> $LOG_FILE
-				tone_alarm $TUNE_OUT_ERROR
-			fi
-		else
-			echo "[init] ERROR: PX4IO update failed"
-			echo "PX4IO update failed" >> $LOG_FILE
-			tone_alarm $TUNE_OUT_ERROR
-		fi
-	fi
-else
-	# Allow running without IO firmware while debug because
-	# debug firmware with IO firmware does not fit in 1Mb.
-	set IO_PRESENT $DEBUG_MODE
-fi
+set IO_PRESENT yes
+## # Do IO checks as early as possible while IO chip is in bootloader mode
+## set IO_PRESENT no
+## if test -e $IO_FILE
+## then
+## 	## Uncomment these lines to force IO update in any case
+## 	# px4io forceupdate 14662 $IO_FILE
+## 	# usleep 2000000
+##
+## 	if px4io checkcrc $IO_FILE
+## 	then
+## 		echo "[init] PX4IO CRC OK"
+## 		echo "PX4IO CRC OK" >> $LOG_FILE
+##
+## 		set IO_PRESENT yes
+## 	else
+## 		echo "[init] Trying to update"
+## 		echo "PX4IO Trying to update" >> $LOG_FILE
+##
+## 		tone_alarm MLL32CP8MB
+##
+## 		if px4io forceupdate 14662 $IO_FILE
+## 		then
+## 			usleep 500000
+## 			if px4io checkcrc $IO_FILE
+## 			then
+## 				echo "[init] PX4IO CRC OK, update successful"
+## 				echo "PX4IO CRC OK after updating" >> $LOG_FILE
+## 				tone_alarm MLL8CDE
+##
+## 				set IO_PRESENT yes
+## 			else
+## 				echo "[init] ERROR: PX4IO update failed"
+## 				echo "PX4IO update failed" >> $LOG_FILE
+## 				tone_alarm $TUNE_OUT_ERROR
+## 			fi
+## 		else
+## 			echo "[init] ERROR: PX4IO update failed"
+## 			echo "PX4IO update failed" >> $LOG_FILE
+## 			tone_alarm $TUNE_OUT_ERROR
+## 		fi
+## 	fi
+## else
+## 	# Allow running without IO firmware while debug because
+## 	# debug firmware with IO firmware does not fit in 1Mb.
+## 	set IO_PRESENT $DEBUG_MODE
+## fi
 
 if [ $DEBUG_MODE = yes ]
 then
@@ -485,7 +486,7 @@ then
 	fi
 
 	indication start
-	
+
 	if param compare A_QLOG_CHECK 1
 	then
 		#
@@ -498,7 +499,7 @@ then
 			echo "Quick_log check FAILED" >> $LOG_FILE
 		fi
 	fi
-	
+
 	if [ $EXIT_ON_END == yes ]
 	then
 		echo "[init] Exit from nsh"

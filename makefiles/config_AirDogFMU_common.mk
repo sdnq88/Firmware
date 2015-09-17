@@ -8,11 +8,8 @@
 #
 ROMFS_ROOT	 ?= $(PX4_BASE)/ROMFS/AirDogFMU
 
-# IO Chip -- px4io firmware
-ROMFS_EXTRA_FILES = $(PX4_BASE)/Images/px4io-v2_default.bin
-
-# IO Chip -- AirDog custom firmware
-#ROMFS_EXTRA_FILES = $(PX4_BASE)/Images/AirDogIO_default.bin
+# IO Chip
+#ROMFS_EXTRA_FILES = $(PX4_BASE)/Images/px4io-v2_default.bin
 
 #
 # Board support modules
