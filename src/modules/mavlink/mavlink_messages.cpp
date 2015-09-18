@@ -2313,6 +2313,7 @@ protected:
 		msg.HRT_mavlink_version = AIRDOG_MAVLINK_VERSION;
 		msg.HRT_error_code = status.error_code;
 		msg.HRT_error_stamp = status.error_stamp;
+		msg.HRT_sensor_status = status.sensor_status;
 
 		bool updated = _pos_sub->update(&_pos_time, &pos);
 		updated |= _home_sub->update(&_home_time, &home);

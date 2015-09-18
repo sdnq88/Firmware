@@ -45,6 +45,7 @@ MODULES		+= drivers/gps
 #MODULES		+= drivers/meas_airspeed
 #MODULES		+= drivers/frsky_telemetry
 MODULES		+= modules/sensors
+MODULES		+= modules/sensor_validation
 #MODULES		+= drivers/mkblctrl
 #MODULES		+= drivers/pca8574
 #MODULES		+= drivers/px4flow

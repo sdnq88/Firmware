@@ -44,6 +44,7 @@
 
 #include <stdint.h>
 #include "../uORB.h"
+#include "sensor_status.h"
 
 struct airdog_status_s {
 	uint8_t main_mode;	// px4_custom_mode.main_mode
@@ -57,6 +58,7 @@ struct airdog_status_s {
 	uint8_t state_aird;     ///< AirDog-FMU's vehicle_status airdog_state
 	uint8_t error_code;
 	uint8_t error_stamp;
+	SENSOR_STATUS sensor_status;
  }; /**< command sent to vehicle */
 
 /**

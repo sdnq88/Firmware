@@ -1246,6 +1246,7 @@ MavlinkReceiver::handle_combo_message(mavlink_message_t *msg)
         _airdog_status.battery_remaining = msg_combo.STS_battery_remaining;
         _airdog_status.error_code = msg_combo.HRT_error_code;
         _airdog_status.error_stamp = msg_combo.HRT_error_stamp;
+        _airdog_status.sensor_status = (SENSOR_STATUS) msg_combo.HRT_sensor_status;
 
 		internal_heartbeat_handle(msg_hrt, msg);
 

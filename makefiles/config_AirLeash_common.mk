@@ -66,6 +66,7 @@ MODULES		+= systemcmds/param
 MODULES		+= systemcmds/perf
 MODULES		+= systemcmds/preflight_check
 MODULES		+= systemcmds/reboot
+MODULES		+= modules/sensor_validation
 MODULES		+= systemcmds/top
 MODULES		+= systemcmds/ver
 #MODULES		+= modules/SiKUploader
