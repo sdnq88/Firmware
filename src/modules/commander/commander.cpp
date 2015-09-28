@@ -1573,7 +1573,7 @@ int commander_thread_main(int argc, char *argv[])
 		check_valid(global_position.timestamp, POSITION_TIMEOUT, eph_evp_good, &(status.condition_global_position_valid), &status_changed);
 
 		if (!status.condition_global_position_valid) {
-			if (gps_was_ok == 1) {
+			if (gps_was_ok == 1 && status.arming_state == ARMING_STATE_ARMED) {
 				QLOG_literal("[commander] GPS signal became bad!");
 				// Only set bad GPS flag in case GPS was already inited
 				gps_was_ok = 0;
