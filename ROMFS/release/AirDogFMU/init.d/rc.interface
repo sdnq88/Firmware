@@ -3,72 +3,40 @@
 # Script to configure control interface
 #
 
-if [ $MIXER != none -a $MIXER != skip ]
+#set FAILSAFE none
+
+set MIXER_FILE /etc/mixers/FMU_quad_x.mix
+set PWM_OUTPUTS 1234
+set PWM_DISARMED 910
+set PWM_MAX 1800
+set PWM_MIN 1075
+
+set PWM_RATE 400 # Hz
+
+if mixer load /dev/pwm_output $MIXER_FILE
 then
-	#
-	# Load mixer
-	#
-	set MIXERSD /fs/microsd/etc/mixers/$MIXER.mix
+	echo "[init] Mixer loaded: $MIXER_FILE"
 
-	#Use the mixer file from the SD-card if it exists
-	if [ -f $MIXERSD ]
-	then
-		set MIXER_FILE $MIXERSD
-	else
-		set MIXER_FILE /etc/mixers/$MIXER.mix
-	fi
+	#
+	# Set PWM output frequency
+	#
+	echo "[init] Set PWM rate: $PWM_RATE"
+	pwm rate -c $PWM_OUTPUTS -r $PWM_RATE
 
-	set OUTPUT_DEV /dev/pwm_output
-	if mixer load $OUTPUT_DEV $MIXER_FILE
-	then
-		echo "[init] Mixer loaded: $MIXER_FILE"
-	else
-		echo "[init] Error loading mixer: $MIXER_FILE"
-		tone_alarm $TUNE_OUT_ERROR
-	fi
+	#
+	# Set disarmed, min and max PWM values
+	#
+	echo "[init] Set PWM disarmed: $PWM_DISARMED"
+	pwm disarmed -c $PWM_OUTPUTS -p $PWM_DISARMED
+
+	echo "[init] Set PWM min: $PWM_MIN"
+	pwm min -c $PWM_OUTPUTS -p $PWM_MIN
+
+	echo "[init] Set PWM max: $PWM_MAX"
+	pwm max -c $PWM_OUTPUTS -p $PWM_MAX
+
+	# pwm failsafe $FAILSAFE
 else
-	if [ $MIXER != skip ]
-	then
-		echo "[init] Mixer not defined"
-		tone_alarm $TUNE_OUT_ERROR
-	fi
-fi
-
-if [ $IO_PRESENT == yes ]
-then
-	if [ $PWM_OUTPUTS != none ]
-	then
-		#
-		# Set PWM output frequency
-		#
-		if [ $PWM_RATE != none ]
-		then
-			echo "[init] Set PWM rate: $PWM_RATE"
-			pwm rate -c $PWM_OUTPUTS -r $PWM_RATE
-		fi
-
-		#
-		# Set disarmed, min and max PWM values
-		#
-		if [ $PWM_DISARMED != none ]
-		then
-			echo "[init] Set PWM disarmed: $PWM_DISARMED"
-			pwm disarmed -c $PWM_OUTPUTS -p $PWM_DISARMED
-		fi
-		if [ $PWM_MIN != none ]
-		then
-			echo "[init] Set PWM min: $PWM_MIN"
-			pwm min -c $PWM_OUTPUTS -p $PWM_MIN
-		fi
-		if [ $PWM_MAX != none ]
-		then
-			echo "[init] Set PWM max: $PWM_MAX"
-			pwm max -c $PWM_OUTPUTS -p $PWM_MAX
-		fi
-	fi
-
-	if [ $FAILSAFE != none ]
-	then
-		pwm failsafe -d $OUTPUT_DEV $FAILSAFE
-	fi
+	echo "[init] Error loading mixer: $MIXER_FILE"
+	tone_alarm $TUNE_OUT_ERROR
 fi
