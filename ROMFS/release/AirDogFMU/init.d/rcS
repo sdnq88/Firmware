@@ -1,10 +1,5 @@
 #!nsh
 
-#
-# Default to auto-start mode.
-#
-set MODE autostart
-
 #set ENABLE_LOG_FILE yes
 set LOG_FILE /dev/null
 
@@ -33,294 +28,286 @@ else
 	tone_alarm "MBT200 O2f#8d8g#8<b8p"
 fi
 
-if [ $MODE == autostart ]
+#
+# Start the ORB (first app to start)
+#
+if uorb start
 then
-	echo "[init] AUTOSTART mode"
-	echo "Autostart mode" >> $LOG_FILE
+	echo "uorb OK" >> $LOG_FILE
+else
+	echo "uorb FAILED. ABORTING."
+	exit
+fi
 
-	#
-	# Start the ORB (first app to start)
-	#
-	if uorb start
+#
+# Load parameters
+#
+set PARAM_FILE /fs/microsd/params
+if mtd start
+then
+	set PARAM_FILE /fs/mtd_params
+	echo "mtd OK" >> $LOG_FILE
+
+	param select $PARAM_FILE
+	if param load
 	then
-		echo "uorb OK" >> $LOG_FILE
+		echo "[param] Loaded: $PARAM_FILE"
+		echo "param OK" >> $LOG_FILE
 	else
-		echo "uorb FAILED. ABORTING."
-		exit
-	fi
-
-	#
-	# Load parameters
-	#
-	set PARAM_FILE /fs/microsd/params
-	if mtd start
-	then
-		set PARAM_FILE /fs/mtd_params
-		echo "mtd OK" >> $LOG_FILE
-
-		param select $PARAM_FILE
-		if param load
+		echo "[param] FAILED loading $PARAM_FILE"
+		echo "param FAILED" >> $LOG_FILE
+		if param reset
 		then
-			echo "[param] Loaded: $PARAM_FILE"
-			echo "param OK" >> $LOG_FILE
-		else
-			echo "[param] FAILED loading $PARAM_FILE"
-			echo "param FAILED" >> $LOG_FILE
-			if param reset
-			then
-			fi
-		fi
-
-	else
-		echo "mtd FAILED" >> $LOG_FILE
-	fi
-
-	#
-	# Set parameters and env variables for selected AUTOSTART
-	#
-	if param compare A_QLOG_WRITE 1
-	then
-		#
-		# Start the Quick_log file writer thread
-		#
-		if qlog start
-		then
-			echo "Quick_log OK" >> $LOG_FILE
-		else
-			echo "Quick_log FAILED" >> $LOG_FILE
 		fi
 	fi
 
+else
+	echo "mtd FAILED" >> $LOG_FILE
+fi
+
+#
+# Set parameters and env variables for selected AUTOSTART
+#
+if param compare A_QLOG_WRITE 1
+then
 	#
-	# Start the Commander (needs to be this early for in-air-restarts)
+	# Start the Quick_log file writer thread
 	#
-	if commander start
+	if qlog start
 	then
-		echo "commander OK" >> $LOG_FILE
+		echo "Quick_log OK" >> $LOG_FILE
 	else
-		echo "commander FAILED" >> $LOG_FILE
+		echo "Quick_log FAILED" >> $LOG_FILE
 	fi
+fi
 
-	if px4io start
-	then
-		echo "[init] PX4IO started"
-		echo "PX4IO started" >> $LOG_FILE
-		sh /etc/init.d/rc.io
-	else
-		echo "[init] ERROR: PX4IO start failed"
-		echo "PX4IO start failed" >> $LOG_FILE
-		tone_alarm $TUNE_OUT_ERROR
-	fi
+#
+# Start the Commander (needs to be this early for in-air-restarts)
+#
+if commander start
+then
+	echo "commander OK" >> $LOG_FILE
+else
+	echo "commander FAILED" >> $LOG_FILE
+fi
 
-	#
-	# Telemetry module
-	#
+if px4io start
+then
+	echo "[init] PX4IO started"
+	echo "PX4IO started" >> $LOG_FILE
+	sh /etc/init.d/rc.io
+else
+	echo "[init] ERROR: PX4IO start failed"
+	echo "PX4IO start failed" >> $LOG_FILE
+	tone_alarm $TUNE_OUT_ERROR
+fi
 
-	echo "Telemetry select" >> $LOG_FILE
-	if param compare A_TELEMETRY_MODE 0
-	then
-		set TELEM_TTY /dev/ttyS1
-		set MAVLINK_TTY /dev/ttyS1
-	fi
-	if param compare A_TELEMETRY_MODE 1
-	then
-		set TELEM_TTY /dev/ttyS1
-	fi
-	if param compare A_TELEMETRY_MODE 2
-	then
-		echo
-		echo Turning OFF BL600
-		gpio_tool set pb12=0
-		echo
-		set TELEM_TTY /dev/ttyS2
-	fi
-	if param compare A_TELEMETRY_MODE 3
-	then
-		echo Turning OFF BL600
-		gpio_tool set pb12=0
-		set TELEM_TTY /dev/ttyS2
-		set MAVLINK_TTY /dev/ttyS2
-	fi
-	if param compare A_TELEMETRY_MODE 4
-	then
-		echo Turning OFF BL600
-		gpio_tool set pb12=0
-	fi
-	echo "Telemetry select OK" >> $LOG_FILE
+#
+# Telemetry module
+#
 
-	if [ x$TELEM_TTY = x ]
-	then
-		echo NO Telemetry.
-	else
-		echo Telemetry port $TELEM_TTY
-		if [ x$MAVLINK_TTY = x ]
-		then
-			# if MAVLINK_TTY not set and TELEM_TTY is set.
-			echo bluetooth21 start $TELEM_TTY listen
-			if bluetooth21 start $TELEM_TTY listen
-			then
-				set MAVLINK_TTY /dev/bt1
-			fi
-		fi
-	fi
-	echo "Telemetry start OK" >> $LOG_FILE
+echo "Telemetry select" >> $LOG_FILE
+if param compare A_TELEMETRY_MODE 0
+then
+	set TELEM_TTY /dev/ttyS1
+	set MAVLINK_TTY /dev/ttyS1
+fi
+if param compare A_TELEMETRY_MODE 1
+then
+	set TELEM_TTY /dev/ttyS1
+fi
+if param compare A_TELEMETRY_MODE 2
+then
+	echo
+	echo Turning OFF BL600
+	gpio_tool set pb12=0
+	echo
+	set TELEM_TTY /dev/ttyS2
+fi
+if param compare A_TELEMETRY_MODE 3
+then
+	echo Turning OFF BL600
+	gpio_tool set pb12=0
+	set TELEM_TTY /dev/ttyS2
+	set MAVLINK_TTY /dev/ttyS2
+fi
+if param compare A_TELEMETRY_MODE 4
+then
+	echo Turning OFF BL600
+	gpio_tool set pb12=0
+fi
+echo "Telemetry select OK" >> $LOG_FILE
 
-	#
-	# MAVLink
-	#
-
+if [ x$TELEM_TTY = x ]
+then
+	echo NO Telemetry.
+else
+	echo Telemetry port $TELEM_TTY
 	if [ x$MAVLINK_TTY = x ]
 	then
-		echo MAVLink NOT started.
-	else
-		if param compare MAV_MINIMALISTIC 1
+		# if MAVLINK_TTY not set and TELEM_TTY is set.
+		echo bluetooth21 start $TELEM_TTY listen
+		if bluetooth21 start $TELEM_TTY listen
 		then
-			set MAVLINK_MODE "-m airdog"
-		else
-			if param compare MAV_MINIMALISTIC 2
-			then
-				set MAVLINK_MODE "-m custom"
-			else
-				if param compare MAV_MINIMALISTIC 3
-				then
-					set MAVLINK_MODE "-m parameter"
-				else
-					# set MAVLINK_MODE "" produces new line on substitution.
-					unset MAVLINK_MODE
-				fi
-			fi
+			set MAVLINK_TTY /dev/bt1
 		fi
-		echo mavlink start $MAVLINK_MODE -r 3000 -d $MAVLINK_TTY
-		mavlink start $MAVLINK_MODE -r 3000 -d $MAVLINK_TTY
+	fi
+fi
+echo "Telemetry start OK" >> $LOG_FILE
 
+#
+# MAVLink
+#
+
+if [ x$MAVLINK_TTY = x ]
+then
+	echo MAVLink NOT started.
+else
+	if param compare MAV_MINIMALISTIC 1
+	then
+		set MAVLINK_MODE "-m airdog"
+	else
 		if param compare MAV_MINIMALISTIC 2
 		then
-			# Enable combo messages instead of heartbeats
-			usleep 30000
-			echo mavlink stream -d $MAVLINK_TTY -r 2 -s HRT_GPOS_TRAJ_COMMAND
-			mavlink stream -d $MAVLINK_TTY -r 2 -s HRT_GPOS_TRAJ_COMMAND
-		fi
-	fi
-	echo "Mavlink start OK" >> $LOG_FILE
-
-	#
-	# mobile
-	#
-
-	if [ $TELEM_TTY != /dev/ttyS2 ]
-	then
-		if mobile start /dev/ttyS2
-		then
-			echo "mobile OK" >> $LOG_FILE
+			set MAVLINK_MODE "-m custom"
 		else
-			echo "mobile failed" >> $LOG_FILE
+			if param compare MAV_MINIMALISTIC 3
+			then
+				set MAVLINK_MODE "-m parameter"
+			else
+				# set MAVLINK_MODE "" produces new line on substitution.
+				unset MAVLINK_MODE
+			fi
 		fi
 	fi
+	echo mavlink start $MAVLINK_MODE -r 3000 -d $MAVLINK_TTY
+	mavlink start $MAVLINK_MODE -r 3000 -d $MAVLINK_TTY
 
-	#
-	# Sensors, Logging, GPS
-	#
-	sh /etc/init.d/rc.sensors
-	echo "Sensors OK" >> $LOG_FILE
-
-	#
-	# Start logging in all modes, including HIL
-	#
-	sh /etc/init.d/rc.logging
-	echo "Logging OK" >> $LOG_FILE
-
-	echo "[init] Start GPS"
-	if [ $GPS_FAKE == yes ]
+	if param compare MAV_MINIMALISTIC 2
 	then
-		echo "[init] Faking GPS"
-		gps start -f
+		# Enable combo messages instead of heartbeats
+		usleep 30000
+		echo mavlink stream -d $MAVLINK_TTY -r 2 -s HRT_GPOS_TRAJ_COMMAND
+		mavlink stream -d $MAVLINK_TTY -r 2 -s HRT_GPOS_TRAJ_COMMAND
+	fi
+fi
+echo "Mavlink start OK" >> $LOG_FILE
+
+#
+# mobile
+#
+
+if [ $TELEM_TTY != /dev/ttyS2 ]
+then
+	if mobile start /dev/ttyS2
+	then
+		echo "mobile OK" >> $LOG_FILE
 	else
-		if param compare SDLOG_M_SAT -1
-		then
-			gps start
-		else
-			gps start -s
-		fi
+		echo "mobile failed" >> $LOG_FILE
 	fi
-	echo "GPS OK" >> $LOG_FILE
+fi
 
-	echo "[init] Vehicle type: MULTICOPTER"
-	param set MAV_TYPE $MAV_TYPE
+#
+# Sensors, Logging, GPS
+#
+sh /etc/init.d/rc.sensors
+echo "Sensors OK" >> $LOG_FILE
 
-	# Load mixer and configure outputs
-	sh /etc/init.d/rc.interface
-	echo "Interface OK" >> $LOG_FILE
+#
+# Start logging in all modes, including HIL
+#
+sh /etc/init.d/rc.logging
+echo "Logging OK" >> $LOG_FILE
 
-	sh /etc/init.d/rc.mc_apps
-	echo "MC_apps OK" >> $LOG_FILE
-
-	#
-	# Start the navigator
-	#
-	if navigator start
+echo "[init] Start GPS"
+if [ $GPS_FAKE == yes ]
+then
+	echo "[init] Faking GPS"
+	gps start -f
+else
+	if param compare SDLOG_M_SAT -1
 	then
-		echo "Navigator OK" >> $LOG_FILE
+		gps start
 	else
-		echo "Navigator FAILED. Aborting!" >> $LOG_FILE
-		exit
+		gps start -s
 	fi
+fi
+echo "GPS OK" >> $LOG_FILE
 
-	if param compare A_DO_FRAME_BUTT 1
-	then
-		#start frame button driver
-		frame_button start
+echo "[init] Vehicle type: MULTICOPTER"
+param set MAV_TYPE $MAV_TYPE
 
-		#
-		# Start the BGC module
-		#
-		if bgc start
-		then
-			echo "BGC OK" >> $LOG_FILE
-		else
-			echo "BGC FAILED" >> $LOG_FILE
-		fi
-	fi
+# Load mixer and configure outputs
+sh /etc/init.d/rc.interface
+echo "Interface OK" >> $LOG_FILE
 
-	if param compare SYS_ACT 1
-	then
-		echo "Dron is activated"
-	else
-		echo "Dron is not activated"
-		commander error 1
-	fi
+sh /etc/init.d/rc.mc_apps
+echo "MC_apps OK" >> $LOG_FILE
 
-	indication start
+#
+# Start the navigator
+#
+if navigator start
+then
+	echo "Navigator OK" >> $LOG_FILE
+else
+	echo "Navigator FAILED. Aborting!" >> $LOG_FILE
+	exit
+fi
 
-	if param compare A_QLOG_CHECK 1
-	then
-		#
-		# Check the quick_log files for any non-empty & valids logs
-		#
-		if qlog check
-		then
-			echo "Quick_log check OK" >> $LOG_FILE
-		else
-			echo "Quick_log check FAILED" >> $LOG_FILE
-		fi
-	fi
+if param compare A_DO_FRAME_BUTT 1
+then
+	#start frame button driver
+	frame_button start
 
 	#
-	# Start CDC/ACM serial driver
+	# Start the BGC module
 	#
-	if sercon
+	if bgc start
 	then
-		echo "[init] USB interface connected"
-		echo "sercon OK" >> $LOG_FILE
-
-		sleep 5
-
-		desktop start /dev/ttyACM0
+		echo "BGC OK" >> $LOG_FILE
 	else
-		echo "Failed to start usb sercon."
-		echo "sercon FAILED" >> $LOG_FILE
+		echo "BGC FAILED" >> $LOG_FILE
 	fi
+fi
 
-# End of autostart
+if param compare SYS_ACT 1
+then
+	echo "Dron is activated"
+else
+	echo "Dron is not activated"
+	commander error 1
+fi
+
+indication start
+
+if param compare A_QLOG_CHECK 1
+then
+	#
+	# Check the quick_log files for any non-empty & valids logs
+	#
+	if qlog check
+	then
+		echo "Quick_log check OK" >> $LOG_FILE
+	else
+		echo "Quick_log check FAILED" >> $LOG_FILE
+	fi
+fi
+
+#
+# Start CDC/ACM serial driver
+#
+if sercon
+then
+	echo "[init] USB interface connected"
+	echo "sercon OK" >> $LOG_FILE
+
+	sleep 5
+
+	desktop start /dev/ttyACM0
+else
+	echo "Failed to start usb sercon."
+	echo "sercon FAILED" >> $LOG_FILE
 fi
 
 free
