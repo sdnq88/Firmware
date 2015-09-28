@@ -26,12 +26,6 @@ DataManager::DataManager() :
     orbId[FD_SystemPower] = ORB_ID(system_power);
     orbId[FD_VehicleStatus] = ORB_ID(vehicle_status);
 
-    // listen orbs
-    for (int i = 0; i < FD_Size; i++)
-    {
-        fds[i] = orb_subscribe(orbId[i]);
-    }
-
     // set orbs interval
     orb_set_interval(fds[FD_AirdogStatus], 5000);
     orb_set_interval(fds[FD_SystemPower], 5000);
@@ -54,6 +48,13 @@ DataManager::DataManager() :
     orbData[FD_MavlinkStatus] = &mavlink_received_stats;
     orbData[FD_SystemPower] = &system_power;
     orbData[FD_VehicleStatus] = &vehicle_status;
+
+    // listen orbs
+    for (int i = 0; i < FD_Size; i++)
+    {
+        fds[i] = orb_subscribe(orbId[i]);
+        orb_copy(orbId[i], fds[i], orbData[i]);
+    }
 
     // clear
     memset(awaitMask, 0, sizeof(awaitMask));
