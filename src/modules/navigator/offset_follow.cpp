@@ -292,7 +292,7 @@ OffsetFollow::execute_vehicle_command_front_follow() {
 
             case REMOTE_CMD_LEFT: 
                 offset_rotation_step(-1, _front_follow_additional_angle);
-                offset_rotation_step(1, _offset_sp_angle);
+                offset_rotation_step(-1, _offset_sp_angle);
                  
                 break;
             case REMOTE_CMD_RIGHT: 

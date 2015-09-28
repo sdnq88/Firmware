@@ -92,7 +92,9 @@ CTM::on_active()
 			set_next_ctm_state();
 			set_ctm_setpoint();
 		}
+
 	}
+
 }
 
 void
