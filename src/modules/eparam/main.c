@@ -192,37 +192,53 @@ int eparam_load(const char *filename)
 
 int eparam_factorySave(void)
 {
-    eparam_save("SENS_ACC_CDATE", factoryFileName, "w");
-    eparam_save("SENS_ACC_CTEMP", factoryFileName, "a");
-    eparam_save("SENS_ACC_XOFF", factoryFileName, "a");
-    eparam_save("SENS_ACC_XSCALE", factoryFileName, "a");
-    eparam_save("SENS_ACC_YOFF", factoryFileName, "a");
-    eparam_save("SENS_ACC_YSCALE", factoryFileName, "a");
-    eparam_save("SENS_ACC_ZOFF", factoryFileName, "a");
-    eparam_save("SENS_ACC_ZSCALE", factoryFileName, "a");
-    eparam_save("SENS_BARO_QNH", factoryFileName, "a");
-    eparam_save("SENS_BOARD_X_OFF", factoryFileName, "a");
-    eparam_save("SENS_BOARD_Y_OFF", factoryFileName, "a");
-    eparam_save("SENS_GYRO_CDATE", factoryFileName, "a");
-    eparam_save("SENS_GYRO_CTEMP", factoryFileName, "a");
-    eparam_save("SENS_GYRO_XOFF", factoryFileName, "a");
-    eparam_save("SENS_GYRO_XSCALE", factoryFileName, "a");
-    eparam_save("SENS_GYRO_YOFF", factoryFileName, "a");
-    eparam_save("SENS_GYRO_YSCALE", factoryFileName, "a");
-    eparam_save("SENS_GYRO_ZOFF", factoryFileName, "a");
-    eparam_save("SENS_GYRO_ZSCALE", factoryFileName, "a");
-    eparam_save("SENS_MAG_CDATE", factoryFileName, "a");
-    eparam_save("SENS_MAG_CTEMP", factoryFileName, "a");
-    eparam_save("SENS_MAG_XCT_OFF", factoryFileName, "a");
-    eparam_save("SENS_MAG_XOFF", factoryFileName, "a");
-    eparam_save("SENS_MAG_XPECT_X", factoryFileName, "a");
-    eparam_save("SENS_MAG_XPECT_Y", factoryFileName, "a");
-    eparam_save("SENS_MAG_XPECT_Z", factoryFileName, "a");
-    eparam_save("SENS_MAG_XSCALE", factoryFileName, "a");
-    eparam_save("SENS_MAG_YOFF", factoryFileName, "a");
-    eparam_save("SENS_MAG_YSCALE", factoryFileName, "a");
-    eparam_save("SENS_MAG_ZOFF", factoryFileName, "a");
-    eparam_save("SENS_MAG_ZSCALE", factoryFileName, "a");
+    const char *params[] = {
+        "SENS_ACC_CDATE",
+        "SENS_ACC_CTEMP",
+        "SENS_ACC_XOFF",
+        "SENS_ACC_XSCALE",
+        "SENS_ACC_YOFF",
+        "SENS_ACC_YSCALE",
+        "SENS_ACC_ZOFF",
+        "SENS_ACC_ZSCALE",
+        "SENS_BARO_QNH",
+        "SENS_BOARD_X_OFF"
+        "SENS_BOARD_Y_OFF"
+        "SENS_GYRO_CDATE",
+        "SENS_GYRO_CTEMP",
+        "SENS_GYRO_XOFF",
+        "SENS_GYRO_XSCALE"
+        "SENS_GYRO_YOFF",
+        "SENS_GYRO_YSCALE"
+        "SENS_GYRO_ZOFF",
+        "SENS_GYRO_ZSCALE"
+        "SENS_MAG_CDATE",
+        "SENS_MAG_CTEMP",
+        "SENS_MAG_XCT_OFF"
+        "SENS_MAG_XOFF",
+        "SENS_MAG_XPECT_X"
+        "SENS_MAG_XPECT_Y"
+        "SENS_MAG_XPECT_Z"
+        "SENS_MAG_XSCALE",
+        "SENS_MAG_YOFF",
+        "SENS_MAG_YSCALE",
+        "SENS_MAG_ZOFF",
+        "SENS_MAG_ZSCALE",
+        NULL
+    };
+    int i = 0;
+
+    for (i = 0; params[i] != NULL; i++)
+    {
+        if (i == 0)
+        {
+            eparam_save(params[i], factoryFileName, "w");
+        }
+        else
+        {
+            eparam_save(params[i], factoryFileName, "a");
+        }
+    }
     return 0;
 }
 
