@@ -11,6 +11,7 @@
 __EXPORT int eparam_main(int argc, char *argv[]);
 
 static FILE *gFile = NULL;
+static const char* factoryFileName = "/fs/microsd/factory.params";
 
 static void do_save(void *arg, param_t param)
 {
@@ -189,6 +190,90 @@ int eparam_load(const char *filename)
     return result;
 }
 
+int eparam_factorySave(void)
+{
+    eparam_save("SENS_ACC_CDATE", factoryFileName, "w");
+    eparam_save("SENS_ACC_CTEMP", factoryFileName, "a");
+    eparam_save("SENS_ACC_XOFF", factoryFileName, "a");
+    eparam_save("SENS_ACC_XSCALE", factoryFileName, "a");
+    eparam_save("SENS_ACC_YOFF", factoryFileName, "a");
+    eparam_save("SENS_ACC_YSCALE", factoryFileName, "a");
+    eparam_save("SENS_ACC_ZOFF", factoryFileName, "a");
+    eparam_save("SENS_ACC_ZSCALE", factoryFileName, "a");
+    eparam_save("SENS_BARO_QNH", factoryFileName, "a");
+    eparam_save("SENS_GYRO_CDATE", factoryFileName, "a");
+    eparam_save("SENS_GYRO_CTEMP", factoryFileName, "a");
+    eparam_save("SENS_GYRO_XOFF", factoryFileName, "a");
+    eparam_save("SENS_GYRO_XSCALE", factoryFileName, "a");
+    eparam_save("SENS_GYRO_YOFF", factoryFileName, "a");
+    eparam_save("SENS_GYRO_YSCALE", factoryFileName, "a");
+    eparam_save("SENS_GYRO_ZOFF", factoryFileName, "a");
+    eparam_save("SENS_GYRO_ZSCALE", factoryFileName, "a");
+    eparam_save("SENS_MAG_CDATE", factoryFileName, "a");
+    eparam_save("SENS_MAG_CTEMP", factoryFileName, "a");
+    eparam_save("SENS_MAG_XCT_OFF", factoryFileName, "a");
+    eparam_save("SENS_MAG_XOFF", factoryFileName, "a");
+    eparam_save("SENS_MAG_XPECT_X", factoryFileName, "a");
+    eparam_save("SENS_MAG_XPECT_Y", factoryFileName, "a");
+    eparam_save("SENS_MAG_XPECT_Z", factoryFileName, "a");
+    eparam_save("SENS_MAG_XSCALE", factoryFileName, "a");
+    eparam_save("SENS_MAG_YOFF", factoryFileName, "a");
+    eparam_save("SENS_MAG_YSCALE", factoryFileName, "a");
+    eparam_save("SENS_MAG_ZOFF", factoryFileName, "a");
+    eparam_save("SENS_MAG_ZSCALE", factoryFileName, "a");
+    return 0;
+}
+
+int eparam_factoryLoad(void)
+{
+    return eparam_load(factoryFileName);
+}
+
+int eparam_factoryReset(void)
+{
+    // save params
+    int SYS_ACT = 0;
+    int A_DEVICE_ID = 0;
+    int MAV_SYS_ID = 0;
+
+    if (param_get(param_find("SYS_ACT"), &SYS_ACT))
+    {
+        printf("failed to get SYS_ACT value");
+    }
+
+    if (param_get(param_find("A_DEVICE_ID"), &A_DEVICE_ID))
+    {
+        printf("failed to get A_DEVICE_ID value");
+    }
+
+    if (param_get(param_find("MAV_SYS_ID"), &MAV_SYS_ID))
+    {
+        printf("failed to get MAV_SYS_ID value");
+    }
+
+    param_reset_all();
+
+    eparam_load(factoryFileName);
+
+    // restore params
+    if (param_set(param_find("SYS_ACT"), &SYS_ACT))
+    {
+        printf("failed to set SYS_ACT value");
+    }
+
+    if (param_set(param_find("A_DEVICE_ID"), &A_DEVICE_ID))
+    {
+        printf("failed to set A_DEVICE_ID value");
+    }
+
+    if (param_set(param_find("MAV_SYS_ID"), &MAV_SYS_ID))
+    {
+        printf("failed to set MAV_SYS_ID value");
+    }
+
+    return 0;
+}
+
 int
 eparam_main(int argc, char *argv[])
 {
@@ -209,6 +294,18 @@ eparam_main(int argc, char *argv[])
     {
         const char *filename = argv[2];
         eparam_load(filename);
+    }
+    else if (argc == 2 && strcmp(argv[1], "factorySave") == 0)
+    {
+        eparam_factorySave();
+    }
+    else if (argc == 2 && strcmp(argv[1], "factoryLoad") == 0)
+    {
+        eparam_factoryLoad();
+    }
+    else if (argc == 2 && strcmp(argv[1], "factoryReset") == 0)
+    {
+        eparam_factoryReset();
     }
     else
     {

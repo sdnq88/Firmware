@@ -95,6 +95,7 @@
 
 #include <mavlink/mavlink_bridge_header.h>
 #include <mavlink/mavlink_log.h>
+#include <eparam/eparam.h>
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
 #include <systemlib/err.h>
@@ -714,22 +715,7 @@ bool handle_command(struct vehicle_status_s *status_local
             
             }
             else if (cmd->param1 == REMOTE_CMD_PARAM_RESET) {
-                // save params
-                int SYS_ACT = 0;
-
-                if (param_get(param_find("SYS_ACT"), &SYS_ACT))
-                {
-                    printf("failed to get SYS_ACT value");
-                }
-
-                param_reset_all();
-
-                // restore params
-                if (param_set(param_find("SYS_ACT"), &SYS_ACT))
-                {
-                    printf("failed to set SYS_ACT value");
-                }
-
+                eparam_factoryReset();
                 param_save_default();
             }
             /* process user camera controll */
