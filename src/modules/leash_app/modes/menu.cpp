@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include <uORB/topics/vehicle_command.h>
+#include <eparam/eparam.h>
 #include <systemlib/param/param.h>
 
 #include "main.h"
