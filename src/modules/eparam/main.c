@@ -202,23 +202,23 @@ int eparam_factorySave(void)
         "SENS_ACC_ZOFF",
         "SENS_ACC_ZSCALE",
         "SENS_BARO_QNH",
-        "SENS_BOARD_X_OFF"
-        "SENS_BOARD_Y_OFF"
+        "SENS_BOARD_X_OFF",
+        "SENS_BOARD_Y_OFF",
         "SENS_GYRO_CDATE",
         "SENS_GYRO_CTEMP",
         "SENS_GYRO_XOFF",
-        "SENS_GYRO_XSCALE"
+        "SENS_GYRO_XSCALE",
         "SENS_GYRO_YOFF",
-        "SENS_GYRO_YSCALE"
+        "SENS_GYRO_YSCALE",
         "SENS_GYRO_ZOFF",
-        "SENS_GYRO_ZSCALE"
+        "SENS_GYRO_ZSCALE",
         "SENS_MAG_CDATE",
         "SENS_MAG_CTEMP",
-        "SENS_MAG_XCT_OFF"
+        "SENS_MAG_XCT_OFF",
         "SENS_MAG_XOFF",
-        "SENS_MAG_XPECT_X"
-        "SENS_MAG_XPECT_Y"
-        "SENS_MAG_XPECT_Z"
+        "SENS_MAG_XPECT_X",
+        "SENS_MAG_XPECT_Y",
+        "SENS_MAG_XPECT_Z",
         "SENS_MAG_XSCALE",
         "SENS_MAG_YOFF",
         "SENS_MAG_YSCALE",
@@ -329,6 +329,9 @@ eparam_main(int argc, char *argv[])
     {
         printf("eparam save <filename> <search_string1> [<search_string2> ...]\n");
         printf("eparam load <filename>\n");
+        printf("eparam factorySave\n");
+        printf("eparam factoryLoad\n");
+        printf("eparam factoryReset\n");
     }
 
     return 0;
