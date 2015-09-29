@@ -42,7 +42,7 @@ bool
 init_allowed_params() {
 
     ALLOWED_PARAMS[0] =  AllowedParam(0,     "A_ACTIVITY",           ALL,  "",    "Activity",              DISPLAY_VALUES_EMPTY);
-    ALLOWED_PARAMS[1] =  AllowedParam(16,    "A_SAH_NO_SPOT",        DOG,  "",    "Home landing",          DISPLAY_VALUES_ON_OFF);
+    ALLOWED_PARAMS[1] =  AllowedParam(16,    "A_SAH_NO_SPOT",        DOG,  "",    "Enforce Home",          DISPLAY_VALUES_ON_OFF);
     ALLOWED_PARAMS[2] =  AllowedParam(1,     "NAV_AFOL_MODE",        DOG,  "",    "Flight mode",           DISPLAY_VALUES_NAV_AFOL_MODE);
     ALLOWED_PARAMS[3] =  AllowedParam(17,    "OFF_FR_ADD_ANG",       DOG,  "",    "Camera angle",          DISPLAY_VALUES_ADAPTIVE_ANG);
     ALLOWED_PARAMS[4] =  AllowedParam(18,    "CBP_MAX_INIT_SPD",     DOG,  "m/s", "Go to line speed",      DISPLAY_VALUES_EMPTY);
