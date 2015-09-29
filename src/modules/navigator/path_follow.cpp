@@ -71,6 +71,8 @@ void PathFollow::on_inactive() {
 
 void PathFollow::on_activation() {
 
+    local_pos = _navigator->get_local_position();
+
     _start_time = hrt_absolute_time();
 
     _vstatus = _navigator->get_vstatus();
@@ -308,7 +310,14 @@ void PathFollow::execute_vehicle_command() {
 				break;
 			}
 			case REMOTE_CMD_DOWN: {
-				_vertical_offset += NavigatorMode::parameters.down_button_step;
+
+                float down_step = NavigatorMode::parameters.down_button_step;
+                float son_allowed_h = local_pos->dist_bottom - NavigatorMode::parameters.son_min;
+
+                if (!local_pos->dist_bottom_valid || (local_pos->dist_bottom_valid && son_allowed_h >= down_step)) {
+                    _vertical_offset += NavigatorMode::parameters.down_button_step;
+                }
+
                 break;
 			}
 		}

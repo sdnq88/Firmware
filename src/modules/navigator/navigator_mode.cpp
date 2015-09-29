@@ -170,6 +170,9 @@ NavigatorMode::updateParamHandles() {
 
     NavigatorMode::parameter_handles.follow_talt_offs = param_find("FOL_TALT_OFF");
 
+    NavigatorMode::parameter_handles.son_min= param_find("SENS_SON_MIN");
+
+
 }
 
 void
@@ -245,6 +248,7 @@ NavigatorMode::updateParamValues() {
 
     param_get(NavigatorMode::parameter_handles.follow_talt_offs, &(NavigatorMode::parameters.follow_talt_offs));
 
+    param_get(NavigatorMode::parameter_handles.son_min, &(NavigatorMode::parameters.son_min));
 }
 
 

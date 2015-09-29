@@ -52,7 +52,7 @@
 #include <uORB/topics/position_setpoint_triplet.h>
 #include <uORB/topics/vehicle_command.h>
 #include <uORB/topics/vehicle_status.h>
- #include <uORB/topics/commander_request.h>
+#include <uORB/topics/commander_request.h>
 
 struct PARAMETERS {
     long int first_point_lat;
@@ -125,6 +125,8 @@ struct PARAMETERS {
     float offset_initial_distance;
 
     float follow_talt_offs;
+
+    float son_min;
 
 };
 
@@ -204,6 +206,8 @@ struct PARAM_HANDLES {
     param_t offset_initial_distance;
 
     param_t follow_talt_offs;
+
+    param_t son_min;
 };
 
 class Navigator;
@@ -268,6 +272,7 @@ protected:
 
 	struct target_global_position_s 	*target_pos;
 	struct vehicle_global_position_s 	*global_pos;
+	struct vehicle_local_position_s 	*local_pos;
 	struct home_position_s 				*home_pos;
 	struct vehicle_status_s				*_vstatus;
     struct follow_offset_s              *follow_offset;

@@ -53,6 +53,7 @@ OffsetFollow::on_activation()
 
     follow_offset = _navigator->get_follow_offset();
     global_pos = _navigator->get_global_position();
+    local_pos =  _navigator->get_local_position();
 	target_pos = _navigator->get_target_position();
     _vstatus = _navigator->get_vstatus();
 
@@ -352,9 +353,16 @@ OffsetFollow::offset_height_step(int direction) {
     if (direction == -1)
         _base_offset(2) += direction * NavigatorMode::parameters.up_button_step;
 
-    if (direction == 1)
-        _base_offset(2) += direction * NavigatorMode::parameters.down_button_step;
+    if (direction == 1) {
 
+        float down_step = NavigatorMode::parameters.down_button_step;
+        float son_allowed_h = local_pos->dist_bottom - NavigatorMode::parameters.son_min;
+
+        if (!local_pos->dist_bottom_valid || (local_pos->dist_bottom_valid && son_allowed_h >= down_step)) {
+            _base_offset(2) += direction * NavigatorMode::parameters.down_button_step;
+        }
+
+    }
 }
 
 void
