@@ -621,9 +621,8 @@ void Screen::showInfo(int info, int error, int leashBattery)
     const int rowCount = 4;
     struct TextInfo text[rowCount];
     const char *title = nullptr;
-    char buffer2[20]; // buffer for error title
-    char buffer[60]; // buffer for error message
-
+    char buffer[60]; // text buffer
+    char buffer2[30]; // text buffer
 
     memset(text, 0, sizeof(text));
 
@@ -773,6 +772,68 @@ void Screen::showInfo(int info, int error, int leashBattery)
             text[1].font = &Font::LucideGrandeMed;
             text[2].text = "Menu to cancel";
             text[2].font = &Font::LucideGrandeTiny;
+            break;
+
+        case INFO_SENSOR_VALIDATION_REQUIRED:
+            text[0].text = "Sensor check";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "required";
+            text[1].font = &Font::LucideGrandeSmall;
+            text[2].text = "press ok";
+            text[2].font = &Font::LucideGrandeTiny;
+            break;
+
+        case INFO_SENSOR_VALIDATION_SHOW_STATUS:
+        {
+            const char *s = nullptr;
+
+            text[0].text = "Sensor check";
+            text[0].font = &Font::LucideGrandeSmall;
+
+            if (error & 1)
+            {
+                s = "ok";
+            }
+            else
+            {
+                s = "waiting";
+            }
+            snprintf(buffer, sizeof(buffer), "Leash: %s", s);
+            text[1].text = buffer;
+            text[1].font = &Font::LucideGrandeSmall;
+
+            if ((error >> 4) & 1)
+            {
+                s = "ok";
+            }
+            else
+            {
+                s = "waiting";
+            }
+            snprintf(buffer2, sizeof(buffer2), "Dog: %s", s);
+
+            text[2].text = buffer2;
+            text[2].font = &Font::LucideGrandeSmall;
+            break;
+        }
+
+        case INFO_SENSOR_VALIDATION_OK_TO_START:
+            text[0].text = "Put AirLeash";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "on your AirDog";
+            text[1].font = &Font::LucideGrandeSmall;
+            text[2].text = "and press OK";
+            text[2].font = &Font::LucideGrandeSmall;
+            break;
+
+        case INFO_SENSOR_VALIDATION_COUNTDOWN:
+            text[0].text = "Sensor check";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "starting in";
+            text[1].font = &Font::LucideGrandeSmall;
+            snprintf(buffer, sizeof(buffer), "%d second%s", error, error > 0 ? "s" : "");
+            text[2].text = buffer;
+            text[2].font = &Font::LucideGrandeSmall;
             break;
 
         case INFO_ERROR:

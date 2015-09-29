@@ -23,6 +23,7 @@ DataManager::DataManager() :
     orbId[FD_LeashRowGPS] = ORB_ID(vehicle_gps_position);
     orbId[FD_LocalPos] = ORB_ID(vehicle_local_position);
     orbId[FD_MavlinkStatus] = ORB_ID(mavlink_receive_stats);
+    orbId[FD_SensorStatus] = ORB_ID(sensor_status);
     orbId[FD_SystemPower] = ORB_ID(system_power);
     orbId[FD_VehicleStatus] = ORB_ID(vehicle_status);
 
@@ -46,6 +47,7 @@ DataManager::DataManager() :
     orbData[FD_LeashRowGPS] = &leashRawGPS;
     orbData[FD_LocalPos] = &localPos;
     orbData[FD_MavlinkStatus] = &mavlink_received_stats;
+    orbData[FD_SensorStatus] = &sensor_status;
     orbData[FD_SystemPower] = &system_power;
     orbData[FD_VehicleStatus] = &vehicle_status;
 
@@ -58,6 +60,13 @@ DataManager::DataManager() :
 
     // clear
     memset(awaitMask, 0, sizeof(awaitMask));
+
+    // listen orbs
+    for (int i = 0; i < FD_Size; i++)
+    {
+        fds[i] = orb_subscribe(orbId[i]);
+        orb_copy(orbId[i], fds[i], orbData[i]);
+    }
 }
 
 DataManager::~DataManager()

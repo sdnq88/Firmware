@@ -101,7 +101,6 @@ Base* ModeConnect::doEvent(int orbId)
                     DOG_PRINT("[modes]{connection} menu button not handled for this state:%d\n"
                             ,currentState);
                     break;
-
             }
         }
         else if (key_pressed(BTN_OK) && currentState == State::NOT_PAIRED)
