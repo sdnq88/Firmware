@@ -96,6 +96,7 @@
 #include <mavlink/mavlink_bridge_header.h>
 #include <mavlink/mavlink_log.h>
 #include <eparam/eparam.h>
+#include <sensor_validation/sensor_validation.hpp>
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
 #include <systemlib/err.h>
@@ -840,6 +841,7 @@ bool handle_command(struct vehicle_status_s *status_local
 	case VEHICLE_CMD_CUSTOM_2:
 	case VEHICLE_CMD_PAYLOAD_PREPARE_DEPLOY:
 	case VEHICLE_CMD_PAYLOAD_CONTROL_DEPLOY:
+	case VEHICLE_CMD_PERFORM_SENSOR_VALIDATION:
 		/* ignore commands that handled in low prio loop */
 		break;
 
@@ -1040,6 +1042,7 @@ int commander_thread_main(int argc, char *argv[])
 
 	status.condition_target_position_valid = false;
 	status.last_target_time = 0;
+	status.sensor_status = SENSOR_STATUS_UNKNOWN;
 
 	/* publish initial state */
 	status_pub = orb_advertise(ORB_ID(vehicle_status), &status);
@@ -1246,6 +1249,10 @@ int commander_thread_main(int argc, char *argv[])
     struct camera_user_offsets_s camera_offset;
 	memset(&camera_offset, 0, sizeof(camera_offset));
 
+	int sensor_status_sub = orb_subscribe(ORB_ID(sensor_status));
+	struct sensor_status_s sensor_status;
+	memset(&sensor_status, 0, sizeof(sensor_status));
+
 	control_status_leds(&status, &armed, true);
 
 	g_flight_time_check.Boot_init();
@@ -1276,8 +1283,9 @@ int commander_thread_main(int argc, char *argv[])
 	bool failsafe_old = false;
     bool pos_res_updated = false;
 	bool target_position_was_valid = false;
-	bool trg_eph_good;
-	bool trg_epv_good;
+	bool trg_eph_good = false;
+	bool trg_epv_good = false;
+	bool trg_sens_valid = false;
 	// -1=not_inited, 0=invalid, 1=valid
 	int8_t gps_was_ok = -1;
 	bool use_gps_failsafe = false;
@@ -1475,6 +1483,15 @@ int commander_thread_main(int argc, char *argv[])
 			}
 		}
 
+		orb_check(sensor_status_sub, &updated);
+		if (updated) {
+			orb_copy(ORB_ID(sensor_status), sensor_status_sub, &sensor_status);
+			if (status.sensor_status != sensor_status.combined_status) {
+				status.sensor_status = sensor_status.combined_status;
+				status_changed = true;
+			}
+		}
+
 		orb_check(diff_pres_sub, &updated);
 
 		if (updated) {
@@ -1648,9 +1665,30 @@ int commander_thread_main(int argc, char *argv[])
 			orb_copy(ORB_ID(target_global_position), target_position_sub, &target_position);
 		}
 
+		// Less strict checks while we are in air
+		if (status.arming_state == ARMING_STATE_ARMED) {
+			if (trg_sens_valid && target_position.sensor_status <= SENSOR_STATUS_FAIL) {
+				QLOG_literal("Target sensors lost mid-flight!");
+				trg_sens_valid = false;
+			}
+			else if (!trg_sens_valid && target_position.sensor_status > SENSOR_STATUS_FAIL ) {
+				QLOG_literal("Target sensors regained!");
+				trg_sens_valid = true;
+			}
+		}
+		// Stricter checks while we are on the ground
+		else {
+			if (trg_sens_valid && target_position.sensor_status != SENSOR_STATUS_OK) {
+				trg_sens_valid = false;
+			}
+			else if (!trg_sens_valid && target_position.sensor_status == SENSOR_STATUS_OK) {
+				trg_sens_valid = true;
+			}
+		}
+
 		// TODO! AK: Consider checking "use_alt" parameter for epv error checking
 		/* recheck target position validity */
-		if (status.condition_target_position_valid) {
+		if (trg_eph_good) {
 			/* More lax threshold if position was valid before */
 			if (good_target_eph > FLT_EPSILON && target_position.eph > good_target_eph * 2.0f) {
 				trg_eph_good = false;
@@ -1659,14 +1697,8 @@ int commander_thread_main(int argc, char *argv[])
 				// Always good if parameter-defined "good_target_eph" is non-positive
 				trg_eph_good = true;
 			}
-			if (good_target_epv > FLT_EPSILON && target_position.epv > good_target_epv * 2.0f) {
-				trg_epv_good = false;
-			}
-			else {
-				// Always good if parameter-defined "good_target_epv" is non-positive
-				trg_epv_good = true;
-			}
-		} else {
+		}
+		else {
 			/* More strict threshold if position was invalid before */
 			if (good_target_eph <= FLT_EPSILON || target_position.eph < good_target_eph) {
 				// Always good if parameter-defined "good_target_eph" is non-positive
@@ -1676,6 +1708,19 @@ int commander_thread_main(int argc, char *argv[])
 				trg_eph_good = false;
 			}
 
+		}
+		if (trg_epv_good) {
+			/* More lax threshold if position was valid before */
+			if (good_target_epv > FLT_EPSILON && target_position.epv > good_target_epv * 2.0f) {
+				trg_epv_good = false;
+			}
+			else {
+				// Always good if parameter-defined "good_target_epv" is non-positive
+				trg_epv_good = true;
+			}
+		}
+		else {
+			/* More strict threshold if position was invalid before */
 			if (good_target_epv <= FLT_EPSILON || target_position.epv < good_target_epv) {
 				// Always good if parameter-defined "good_target_epv" is non-positive
 				trg_epv_good = true;
@@ -1685,8 +1730,7 @@ int commander_thread_main(int argc, char *argv[])
 			}
 		}
 
-
-		check_valid(target_position.timestamp, target_datalink_timeout * 1000, trg_eph_good && trg_epv_good, &(status.condition_target_position_valid), &status_changed);
+		check_valid(target_position.timestamp, target_datalink_timeout * 1000, trg_eph_good && trg_epv_good && trg_sens_valid, &(status.condition_target_position_valid), &status_changed);
 
         bool play_tune_target_signal_invalid = false;
 
@@ -1806,8 +1850,7 @@ int commander_thread_main(int argc, char *argv[])
 		}
 
 		/* If in INIT state, try to proceed to STANDBY state */
-		if (status.arming_state == ARMING_STATE_INIT && low_prio_task == LOW_PRIO_TASK_NONE) {
-			/* TODO: check for sensors */
+		if (status.arming_state == ARMING_STATE_INIT && low_prio_task == LOW_PRIO_TASK_NONE && status.sensor_status == SENSOR_STATUS_OK) {
 			arming_ret = arming_state_transition(&status, &safety, ARMING_STATE_STANDBY, &armed, true /* fRunPreArmChecks */, mavlink_fd);
 
 			if (arming_ret == TRANSITION_CHANGED) {
@@ -3466,6 +3509,23 @@ void *commander_low_prio_loop(void *arg)
 
 				break;
 			}
+		case VEHICLE_CMD_PERFORM_SENSOR_VALIDATION: {
+
+			bool res = false;
+			if ((int)cmd.param1 == 1) {
+				res = request_sensor_check();
+			}
+			if (res) {
+				answer_command(cmd, VEHICLE_CMD_RESULT_ACCEPTED);
+				tune_positive(true);
+			}
+			else {
+				answer_command(cmd, VEHICLE_CMD_RESULT_DENIED);
+				tune_negative(true);
+			}
+
+			break;
+		}
 
 		case VEHICLE_CMD_PREFLIGHT_STORAGE: {
 

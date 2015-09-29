@@ -128,6 +128,7 @@ MavlinkReceiver::MavlinkReceiver(Mavlink *parent) :
 	_rc_pub(-1),
 	_manual_pub(-1),
 	_target_pos_pub(-1),
+	_target_pos(),
 	_external_trajectory_pub(-1),
     _activity_params_pub(-1),
     _activity_request_pub(-1),
@@ -1006,6 +1007,7 @@ MavlinkReceiver::handle_message_global_position_int(mavlink_message_t *msg)
 {
 	mavlink_global_position_int_t pos;
 	mavlink_msg_global_position_int_decode(msg, &pos);
+	memset(&_target_pos, 0, sizeof(_target_pos));
 
 	internal_global_position_int_handle(pos, msg);
 }
@@ -1013,28 +1015,25 @@ MavlinkReceiver::handle_message_global_position_int(mavlink_message_t *msg)
 // Notice that msg might be not just global_position_int message, so use only as general mavlink message
 void
 MavlinkReceiver::internal_global_position_int_handle(const mavlink_global_position_int_t &pos, mavlink_message_t *msg) {
-	struct target_global_position_s target_pos;
-	memset(&target_pos, 0, sizeof(target_pos));
 
-
-	target_pos.timestamp = hrt_absolute_time();
-	target_pos.sysid = msg->sysid;
-	target_pos.remote_timestamp = ((uint64_t) pos.time_boot_ms) * 1000;
-	target_pos.lat = pos.lat * 1.0e-7d;
-	target_pos.lon = pos.lon * 1.0e-7d;
-	target_pos.alt = pos.alt * 1.0e-3f;
-	target_pos.vel_n = pos.vx * 1.0e-2f;
-	target_pos.vel_e = pos.vy * 1.0e-2f;
-	target_pos.vel_d = pos.vz * 1.0e-2f;
-	target_pos.eph = pos.eph * 1.0e-2f;
-	target_pos.epv = pos.epv * 1.0e-2f;
-	target_pos.yaw = _wrap_pi(pos.hdg / 100.0f * M_DEG_TO_RAD_F);
+	_target_pos.timestamp = hrt_absolute_time();
+	_target_pos.sysid = msg->sysid;
+	_target_pos.remote_timestamp = ((uint64_t) pos.time_boot_ms) * 1000;
+	_target_pos.lat = pos.lat * 1.0e-7d;
+	_target_pos.lon = pos.lon * 1.0e-7d;
+	_target_pos.alt = pos.alt * 1.0e-3f;
+	_target_pos.vel_n = pos.vx * 1.0e-2f;
+	_target_pos.vel_e = pos.vy * 1.0e-2f;
+	_target_pos.vel_d = pos.vz * 1.0e-2f;
+	_target_pos.eph = pos.eph * 1.0e-2f;
+	_target_pos.epv = pos.epv * 1.0e-2f;
+	_target_pos.yaw = _wrap_pi(pos.hdg / 100.0f * M_DEG_TO_RAD_F);
 
 	if (_target_pos_pub < 0) {
-		_target_pos_pub = orb_advertise(ORB_ID(target_global_position), &target_pos);
+		_target_pos_pub = orb_advertise(ORB_ID(target_global_position), &_target_pos);
 
 	} else {
-		orb_publish(ORB_ID(target_global_position), _target_pos_pub, &target_pos);
+		orb_publish(ORB_ID(target_global_position), _target_pos_pub, &_target_pos);
 	}
 }
 
@@ -1274,6 +1273,9 @@ MavlinkReceiver::handle_combo_message(mavlink_message_t *msg)
 			msg_combo.GPOS_epv,
 			msg_combo.GPOS_hdg
 		};
+		// Published later in internal handle
+		memset(&_target_pos, 0, sizeof(_target_pos));
+		_target_pos.sensor_status = (SENSOR_STATUS) msg_combo.HRT_sensor_status;
 
 		internal_global_position_int_handle(msg_gpos, msg);
 	}

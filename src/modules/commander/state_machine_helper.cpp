@@ -932,8 +932,15 @@ int prearm_check(const struct vehicle_status_s *status, const int mavlink_fd)
 	int recalibration_date_diff;
 	float recalibration_temp_diff;
 
-	int fd = open(ACCEL_DEVICE_PATH, O_RDONLY);
+	int fd = -1;
 
+	if (status->sensor_status != SENSOR_STATUS_OK) {
+		mavlink_log_critical(mavlink_fd, "ARM FAIL: SENSOR VALIDATION NOT OK");
+		failed = true;
+		goto system_eval;
+	}
+
+	fd = open(ACCEL_DEVICE_PATH, O_RDONLY);
 	if (fd < 0) {
 		mavlink_log_critical(mavlink_fd, "ARM FAIL: ACCEL SENSOR MISSING");
 		failed = true;
@@ -1036,6 +1043,8 @@ int prearm_check(const struct vehicle_status_s *status, const int mavlink_fd)
 	}
 
 system_eval:
-	close(fd);
+	if (fd != -1) {
+		close(fd);
+	}
 	return (failed);
 }
