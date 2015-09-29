@@ -201,6 +201,8 @@ int eparam_factorySave(void)
     eparam_save("SENS_ACC_ZOFF", factoryFileName, "a");
     eparam_save("SENS_ACC_ZSCALE", factoryFileName, "a");
     eparam_save("SENS_BARO_QNH", factoryFileName, "a");
+    eparam_save("SENS_BOARD_X_OFF", factoryFileName, "a");
+    eparam_save("SENS_BOARD_Y_OFF", factoryFileName, "a");
     eparam_save("SENS_GYRO_CDATE", factoryFileName, "a");
     eparam_save("SENS_GYRO_CTEMP", factoryFileName, "a");
     eparam_save("SENS_GYRO_XOFF", factoryFileName, "a");
