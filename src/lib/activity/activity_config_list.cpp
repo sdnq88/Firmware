@@ -213,8 +213,8 @@ init_activity_config_list(){
         "Base",
         {
             //           Param name           Type         Device  Istart Iend  Step  Values
-            ParamConfig("A_SAH_NO_SPOT",     VALUES_STR,    DOG,   -1,    -1,  -1,    {0,1}              ),
             ParamConfig("NAV_AFOL_MODE",     VALUES_STR,    DOG,   -1,    -1,  -1,    {0,1,2,3,4}        ),
+            ParamConfig("A_SAH_NO_SPOT",     VALUES_STR,    DOG,   -1,    -1,  -1,    {0,1}              ),
             ParamConfig("OFF_FR_ADD_ANG",     VALUES_STR,    DOG,   -1,    -1,  -1,    {0,1,2,3,4,5,6,7}  ),
             ParamConfig("CBP_MAX_INIT_SPD",   INTERVAL,      DOG,   1,     10,  1,     {}                 ),
             ParamConfig("NAV_TAKEOFF_ALT",    INTERVAL,      DOG,   5,     50,  1,     {}                 ),
@@ -283,8 +283,8 @@ init_activity_config_list(){
             activityNames[ACTIVITY_SURF],
             {
                 //           Param name           Type         Device  Default Istart Iend  Step  Values
-                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}              ),
                 ParamConfig("NAV_AFOL_MODE",      VALUES_STR,    DOG,      -1,    -1,  -1,    {0,3}            ),
+                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}              ),
                 ParamConfig("A_BSC_SAF_ACT",      VALUES_STR,    DOG,      -1,    -1,  -1,    {1}              ),
                 ParamConfig("FOL_RPT_ALT",        VALUES_STR,    DOG,      -1,    -1,  -1,    {0}              ),
             });
@@ -324,8 +324,8 @@ init_activity_config_list(){
             activityNames[ACTIVITY_WAKE],
             {
                 //           Param name           Type         Device  Default Istart Iend  Step  Values
-                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("NAV_AFOL_MODE",      VALUES_STR,    DOG,      -1,    -1,  -1,    {1,3}              ),
+                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("A_BSC_SAF_ACT",      VALUES_STR,    DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("FOL_RPT_ALT",        VALUES_STR,    DOG,      -1,    -1,  -1,    {0}                ),
             });
@@ -344,8 +344,8 @@ init_activity_config_list(){
             activityNames[ACTIVITY_SNOWBOARD],
             {
                 //           Param name           Type         Device  Default Istart Iend  Step  Values
-                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("NAV_AFOL_MODE",      VALUES_STR,    DOG,      -1,    -1,  -1,    {2}                ),
+                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("A_BSC_SAF_ACT",      VALUES_STR,    DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("FOL_RPT_ALT",        VALUES_STR,    DOG,      -1,    -1,  -1,    {0}                ),
             });
@@ -354,8 +354,8 @@ init_activity_config_list(){
             ACTIVITY_KITE,
             activityNames[ACTIVITY_KITE],
             {
-                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,      DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("NAV_AFOL_MODE",      VALUES_STR,    DOG,      -1,    -1,  -1,    {0}                ),
+                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,      DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("A_BSC_SAF_ACT",      VALUES_STR,    DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("FOL_RPT_ALT",        VALUES_STR,    DOG,      -1,    -1,  -1,    {0}                ),
             }
