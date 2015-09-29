@@ -226,6 +226,8 @@ commander start
 leash start
 indication start
 
+sensor_validation start
+
 if param compare SDLOG_ON_BOOT 1
 then
 	sdlog2 start -b 22 -r 200 -e
