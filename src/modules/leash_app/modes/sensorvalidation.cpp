@@ -60,27 +60,42 @@ Base* SensorValidation::doEvent(int orbId)
     {
         case Status::GetStatus:
         {
-            bool isLeashOk;
-            bool isDogOk;
+            SENSOR_STATUS dogStatus = DataManager::instance()->airdog_status.sensor_status;
+            SENSOR_STATUS leashStatus = DataManager::instance()->sensor_status.combined_status;
+            int showStatus = 0;
 
-            { // check airdog sensor status
-                SENSOR_STATUS sensorStatus = DataManager::instance()->airdog_status.sensor_status;
-                isDogOk = sensorStatus == SENSOR_STATUS_OK;
+            if (leashStatus == SENSOR_STATUS_OK)
+            {
+                showStatus |= 1;
+            }
+            else if (leashStatus < SENSOR_STATUS_CHECK_NEEDED)
+            {
+                // error
+                showStatus |= 2;
             }
 
-            { // check airleash sensor status
-                SENSOR_STATUS sensorStatus = DataManager::instance()->sensor_status.combined_status;
-                isLeashOk = sensorStatus == SENSOR_STATUS_OK;;
+            if (dogStatus == SENSOR_STATUS_OK)
+            {
+                showStatus |= 1 << 4;
+            }
+            else if (dogStatus < SENSOR_STATUS_CHECK_NEEDED)
+            {
+                // error
+                showStatus |= 2 << 4;
             }
 
-            if (isDogOk && isLeashOk)
+            if (dogStatus == SENSOR_STATUS_OK && leashStatus == SENSOR_STATUS_OK)
             {
                 next = new Main();
             }
-            else
+            else if (dogStatus != SENSOR_STATUS_UNKNOWN && leashStatus != SENSOR_STATUS_UNKNOWN)
             {
                 DisplayHelper::showInfo(INFO_SENSOR_VALIDATION_REQUIRED, 0);
                 status = Status::Required;
+            }
+            else
+            {
+                DisplayHelper::showInfo(INFO_SENSOR_VALIDATION_SHOW_STATUS, showStatus);
             }
 
             break;
@@ -150,7 +165,7 @@ Base* SensorValidation::doEvent(int orbId)
 
                 if (sensorStatus == SENSOR_STATUS_OK)
                 {
-                    showStatus = 1 << 4;
+                    showStatus |= 1 << 4;
                 }
                 else if (sensorStatus < SENSOR_STATUS_CHECK_NEEDED)
                 {
