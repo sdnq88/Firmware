@@ -2,8 +2,8 @@ set R FAIL
 
 echo ---
 
-echo bgc test-quick
-if bgc test-quick
+echo bgc test
+if bgc test
 then
 	set R OK
 fi

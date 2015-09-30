@@ -8,7 +8,6 @@
 #include <systemlib/systemlib.h>
 
 #include "bgc.hpp"
-
 #include "bgc_uart.hpp"
 #include "bgc_uart_msg.hpp"
 
@@ -74,7 +73,7 @@ int BGC::Thread_main(int argc, char *argv[]) {
     return 0;
 }
 
-bool BGC::Factory_check() {
+bool BGC::Factory_check(bool quick) {
     if ( s_thread_running ) {
         printf("[BGC Factory Check] stop daemon first.\n");
         return false;
@@ -83,6 +82,16 @@ bool BGC::Factory_check() {
     if ( !x.bgc_uart.Open() ) {
         printf("[BGC Factory Check] open BGC uart failed.\n");
         return false;
+    }
+    if (quick)
+    {
+        x.s_discovered_speed == B256000;
+        x.s_discovered_parity == BGC_uart::PARITY_NONE;
+    }
+    else
+    {
+        x.s_discovered_speed == -1;
+        x.s_discovered_parity == -1;
     }
     if ( !x.Run_setup() ) {
         printf("[BGC Factory Check] communication failed.\n");

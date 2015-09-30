@@ -81,6 +81,14 @@ nsh>
 
 ### BGC
 
+There are two version quick and slow.
+Quick checks only one UART mode, 256000 8n1.
+Slow checks more modes and is really slow.
+
+Command is one of:
+* `sh /etc/extras/bgc`
+* `sh /etc/extras/bgc-slow`
+
 Successfull case:
 
 ```

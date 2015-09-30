@@ -15,7 +15,7 @@ class BGC {
 public:
     static bool Start_thread();
     static bool Stop_thread();
-    static bool Factory_check();
+    static bool Factory_check(bool quick);
 
 private:
     // Returns instantly, does not perform any IO.
