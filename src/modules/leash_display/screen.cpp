@@ -786,34 +786,51 @@ void Screen::showInfo(int info, int error, int leashBattery)
         case INFO_SENSOR_VALIDATION_SHOW_STATUS:
         {
             const char *s = nullptr;
+            bool calibrate = true;
 
             text[0].text = "Sensor check";
             text[0].font = &Font::LucideGrandeSmall;
 
-            if (error & 1)
+            if ((0xF & error) == 1)
             {
                 s = "ok";
             }
+            else if ((0xF & error) == 2)
+            {
+                s = "failed";
+            }
             else
             {
-                s = "waiting";
+                calibrate = false;
+                s = "wait";
             }
-            snprintf(buffer, sizeof(buffer), "Leash: %s", s);
+            snprintf(buffer, sizeof(buffer), "AirLeash: %s", s);
             text[1].text = buffer;
             text[1].font = &Font::LucideGrandeSmall;
 
-            if ((error >> 4) & 1)
+            if ((error >> 4) == 1)
             {
                 s = "ok";
             }
+            else if ((error >> 4) == 2)
+            {
+                s = "failed";
+            }
             else
             {
-                s = "waiting";
+                calibrate = false;
+                s = "wait";
             }
-            snprintf(buffer2, sizeof(buffer2), "Dog: %s", s);
+            snprintf(buffer2, sizeof(buffer2), "AirDog: %s", s);
 
             text[2].text = buffer2;
             text[2].font = &Font::LucideGrandeSmall;
+
+            if (calibrate)
+            {
+                text[3].text = "Please calibrate";
+                text[3].font = &Font::LucideGrandeTiny;
+            }
             break;
         }
 
