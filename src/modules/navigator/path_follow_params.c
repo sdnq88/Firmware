@@ -97,14 +97,14 @@ PARAM_DEFINE_FLOAT(PAFOL_VPID_D, 0.2f);
  * when aditional decrease necessary.
  * @group PathFollow
  */
-PARAM_DEFINE_FLOAT(PAFOL_VPID_I_DR, 7.0f);
+PARAM_DEFINE_FLOAT(PAFOL_VPID_I_DR, 10.0f);
 
 /**
  * Follow path vel PID control integral part aditional increase rate
  * when aditional increase necessary.
  * @group PathFollow
  */
-PARAM_DEFINE_FLOAT(PAFOL_VPID_I_IR, 5.0f);
+PARAM_DEFINE_FLOAT(PAFOL_VPID_I_IR, 10.0f);
 
 /**
  * Follow path vel PID control integral part upper limit.

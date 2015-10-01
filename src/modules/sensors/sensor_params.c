@@ -213,7 +213,7 @@ PARAM_DEFINE_INT32(SENS_SON_ON, 1);
  * @max unlimited;    max range of sonar, but there is no real maximal boundary
  * @group Sensor Calibration
  */
-PARAM_DEFINE_FLOAT(SENS_SON_MIN, 6.0f);
+PARAM_DEFINE_FLOAT(SENS_SON_MIN, 5.0f);
 
 /**
  * Sonar coefficient to multiply sonar minimal distance by, resulting in critical distance
