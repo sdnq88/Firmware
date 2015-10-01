@@ -14,6 +14,10 @@ PARAM_DEFINE_FLOAT(SVAL_GOOD_FRACT, 0.99f);
  */
 PARAM_DEFINE_FLOAT(SVAL_ATT_THRESH, 0.7f);
 /*
+ * Threshold for mean angle (degrees) on pitch and roll together for attitude checks. Angles less than this will be ok.
+ */
+PARAM_DEFINE_FLOAT(SVAL_ATT_ANGLE, 5.0f);
+/*
  * Hours since 1970.01.01 when last validation check was done
  */
 PARAM_DEFINE_INT32(SVAL_LAST_DATE, 0);

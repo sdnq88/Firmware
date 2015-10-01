@@ -314,6 +314,9 @@ void validate_attitude(const Variance &pitch_variance, const Variance &roll_vari
 	param_get(param_find("SVAL_ATT_THRESH"), &tmp_float_param);
 	float attitude_variance_threshold = tmp_float_param * M_DEG_TO_RAD_F;
 	attitude_variance_threshold *= attitude_variance_threshold;
+	param_get(param_find("SVAL_ATT_ANGLE"), &tmp_float_param);
+	float attitude_mean_threshold = tmp_float_param * M_DEG_TO_RAD_F;
+	attitude_mean_threshold *= attitude_mean_threshold;
 	float success_fraction;
 	param_get(param_find("SVAL_GOOD_FRACT"), &success_fraction);
 
@@ -341,14 +344,27 @@ void validate_attitude(const Variance &pitch_variance, const Variance &roll_vari
 				(double) attitude_variance_threshold, (double) pitch_variance.get_variance(),
 				(double) roll_variance.get_variance(), (double) yaw_variance.get_variance());
 	}
-	else if (pitch_variance.get_mean()) {
-
+	else if (powf(fabsf(pitch_variance.get_mean()), 2)
+			+ powf(fabsf(roll_variance.get_mean()), 2) > attitude_mean_threshold) {
+		if (res > SENSOR_STATUS_WRONG) {
+			res = SENSOR_STATUS_WRONG;
+		}
+		sens_status.attitude_status = SENSOR_STATUS_WRONG;
+		warnx("Attitude deviation is too high.");
+		DOG_PRINT("Expected deviation: %.6f, pitch: %.6f,\n\troll: %.6f square sum: %.6f\n",
+				(double) attitude_mean_threshold, (double) pitch_variance.get_mean(),
+				(double) roll_variance.get_mean(),
+				(double) (powf(fabsf(pitch_variance.get_mean()), 2) + powf(fabsf(roll_variance.get_mean()), 2)));
 	}
 	else {
 		sens_status.attitude_status = SENSOR_STATUS_OK;
 		DOG_PRINT("Expected variance: %.6f, pitch: %.6f,\n\troll: %.6f, yaw: %.6f\n",
 				(double) attitude_variance_threshold, (double) pitch_variance.get_variance(),
 				(double) roll_variance.get_variance(), (double) yaw_variance.get_variance());
+		DOG_PRINT("Expected deviation: %.6f, pitch: %.6f,\n\troll: %.6f square sum: %.6f\n",
+				(double) attitude_mean_threshold, (double) pitch_variance.get_mean(),
+				(double) roll_variance.get_mean(),
+				(double) (powf(fabsf(pitch_variance.get_mean()), 2) + powf(fabsf(roll_variance.get_mean()), 2)));
 	}
 }
 
