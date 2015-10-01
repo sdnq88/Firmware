@@ -13,6 +13,7 @@
 #include <uORB/topics/vehicle_status.h>
 
 #include "indication.h"
+#include <drivers/stm32/tone_alarm/tone_alarm.h>
 
 static pthread_mutex_t mutex_led_action = PTHREAD_MUTEX_INITIALIZER;
 
@@ -24,6 +25,7 @@ static int led_pattern = -1;
 
 static int vehicle_status_sub;
 static int bt_state_sub;
+static TONE_ALARM_HANDLE tone_alarm_handle;
 
 static GLOBAL_BT_STATE bt_global_state = INITIALIZING;
 static bool gps_valid = false;
@@ -149,6 +151,8 @@ init()
     bt_state_s bt_state;
     orb_copy(ORB_ID(bt_state), bt_state_sub, &bt_state);
     bt_global_state = bt_state.global_state;
+
+    tone_alarm_handle = tone_alarm_init();
 }
 
 void
@@ -222,6 +226,17 @@ update(hrt_abstime now)
             led_perform_actions(led_pattern_circle, LED_PATTERN_SIZE(led_pattern_circle));
             actionPerformed = true;
         }
+
+        if (status.airdog_state == AIRD_STATE_LANDING)
+        {
+            led_perform_actions(led_pattern_on, LED_PATTERN_SIZE(led_pattern_on));
+            tone_alarm_play(tone_alarm_handle, TONE_LANDING1);
+            usleep(416666);
+            led_perform_actions(led_pattern_off, LED_PATTERN_SIZE(led_pattern_off));
+            tone_alarm_play(tone_alarm_handle, TONE_LANDING2);
+            usleep(416666);
+            actionPerformed = true;
+        }
     }
 
     if (!actionPerformed)
@@ -245,7 +260,11 @@ update(hrt_abstime now)
 
 void
 done()
-{}
+{
+    orb_unsubscribe(vehicle_status_sub);
+    orb_unsubscribe(bt_state_sub);
+    tone_alarm_close(tone_alarm_handle);
+}
 
 
 }} // end of namespace indication::leds

@@ -125,7 +125,7 @@ update(hrt_abstime now)
             led_set_intensity(LED_RED,100);
             ioctl(beeper_fd, TONE_SET_ALARM, tone_pattern);
 			leds::set_pattern_repeat(LED_STATUS, pattern);
-
+			close(beeper_fd);
 			if (link_valid)
 				pattern = 0xFFFFFFFd;
 //  0xFF00FF00
@@ -160,7 +160,11 @@ update(hrt_abstime now)
 
 void
 done()
-{ orb_unsubscribe(status_sub); }
+{
+	orb_unsubscribe(status_sub);
+	orb_unsubscribe(airdog_sub);
+	orb_unsubscribe(leash_sub);
+}
 
 
 }} // end of namespace indication::leds
