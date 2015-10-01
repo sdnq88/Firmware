@@ -1018,6 +1018,7 @@ int HMC5883::sample_excited(struct file * filp, float averages[3]) {
 			}
 		}
 	}
+	::close(fd);
 	return res;
 }
 
@@ -1261,11 +1262,15 @@ int HMC5883::check_calibration()
 int HMC5883::set_excitement(int enable)
 {
 	int ret;
+	uint8_t tmp;
 	/* arm the excitement strap */
-	ret = read_reg(ADDR_CONF_A, _conf_reg);
+	ret = read_reg(ADDR_CONF_A, tmp);
 
-	if (OK != ret)
+	if (OK != ret || tmp != _conf_reg) {
 		perf_count(_comms_errors);
+		warn("BAAAD! Read conf reg failed! Can't continue!");
+		return 1;
+	}
 
 	_conf_reg &= ~0x03; // no bias by default
 	if (enable > 0) {
