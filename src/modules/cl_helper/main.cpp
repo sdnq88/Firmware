@@ -120,6 +120,7 @@ bool modify_receive_fake_activity_params();
 bool print_activity_params_orb_content();
 bool fill_activity_files();
 bool send_switch_activity(int activity);
+void test_activity_factory_reset();
 
 void sendAirDogCommnad(enum VEHICLE_CMD command, float param1, float param2, float param3, float param4, double param5, double param6, float param7);
 
@@ -178,9 +179,7 @@ main(int argc, char const * const * argv)
             Activity::Files::update_activity(1,0);
         } else if (streq(argv[2], "clear_file_state")) {
             Activity::Files::clear_file_state();
-        } else if (streq(argv[2], "send_orb")) {
-        }
-        else if (streq(argv[2], "switch_cmd")){
+        } else if (streq(argv[2], "switch_cmd")){
             if (argc == 4)
             {
                 const int activity = atoi(argv[3]);
@@ -188,11 +187,13 @@ main(int argc, char const * const * argv)
             } else {
                 send_switch_activity(2);
             }
-
-        } else {
+        } else if (streq(argv[2], "factory_reset")){
+            test_activity_factory_reset();
+        } 
+        else 
+        {
             usage();
         }
-    
     } else {
         usage();
     }
@@ -426,4 +427,8 @@ void sendAirDogCommnad(enum VEHICLE_CMD command,
     {
         to_vehicle_command = orb_advertise(ORB_ID(vehicle_command), &vehicle_command);
     }
+}
+
+void test_activity_factory_reset(){
+    activity_factory_reset();
 }

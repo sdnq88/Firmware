@@ -541,3 +541,10 @@ parse_activity_file_line(char line[],char (&id)[MAX_STR_LEN], char (&value)[MAX_
 // end of namespace Files
 }
 // end of namespace Activity
+//
+
+void activity_factory_reset(){
+    for (int i=0;i<Activity::ACTIVITIES_COUNT;i++){
+        Activity::Files::reset_activity_params_file(i);
+    } 
+}
