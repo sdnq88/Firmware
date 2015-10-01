@@ -75,7 +75,7 @@ private:
 
     void offset_height_step(int);
     void offset_distance_step(int);
-    void offset_rotation_step(int, float&);
+    void offset_rotation_step(int, float&, float);
 
     void calc_actual_angle();
     void normalize_angle(float &angle);
