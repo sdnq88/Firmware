@@ -16,6 +16,7 @@
 #include <ctime>
 
 #include <activity/activity_change_manager.hpp>
+#include <activity/activity_files.h>
 #include <activity/activity_files.hpp>
 #include <activity/activity_lib_constants.h>
 
