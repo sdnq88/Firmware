@@ -371,6 +371,20 @@ void validate_attitude(const Variance &pitch_variance, const Variance &roll_vari
 extern "C" __EXPORT int sensor_validation_main(int argc, char* argv[]) {
 
 	if (argc == 2 && strcmp(argv[1], "start") == 0) {
+		int enabled = 1;
+		param_get(param_find("SVAL_ENABLE"), &enabled);
+		if (enabled == 0) {
+			sensor_status_s sens_status;
+			sens_status.combined_status = SENSOR_STATUS_OK;
+			sens_status.accel_status = SENSOR_STATUS_OK;
+			sens_status.attitude_status = SENSOR_STATUS_OK;
+			sens_status.baro_status = SENSOR_STATUS_OK;
+			sens_status.gyro_status = SENSOR_STATUS_OK;
+			sens_status.mag_status = SENSOR_STATUS_OK;
+			int sens_status_pub = orb_advertise(ORB_ID(sensor_status), &sens_status);
+			close(sens_status_pub);
+			return 0;
+		}
 		if (!g_thread_running && !g_thread_should_run) {
 			g_thread_should_run = true;
 			task_spawn_cmd("sens_validation_daemon",

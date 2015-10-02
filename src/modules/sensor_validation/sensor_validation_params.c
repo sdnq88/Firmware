@@ -33,3 +33,7 @@ PARAM_DEFINE_FLOAT(SVAL_LAST_TEMP, -278.15f);
  * What temperature difference should trigger recheck
  */
 PARAM_DEFINE_FLOAT(SVAL_TEMP_THRESH, 5.0f);
+/*
+ * Enable or disable the validation. Disabled on 0, enabled otherwise.
+ */
+PARAM_DEFINE_INT32(SVAL_ENABLE, 1);
