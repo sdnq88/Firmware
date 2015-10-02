@@ -15,10 +15,11 @@
 #include <systemlib/err.h>
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
+#include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/sensor_status.h>
 #include <uORB/topics/vehicle_attitude.h>
+#include <uORB/topics/vehicle_global_position.h>
 #include <uORB/topics/vehicle_gps_position.h>
-#include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/uORB.h>
 
@@ -30,7 +31,8 @@ static bool g_intensive_check = false;
 constexpr uint64_t lazy_wait_interval_us = 1 * 1000 * 1000;
 constexpr uint32_t sampling_interval_ms = 0; // 0 - unlimited
 constexpr uint32_t poll_timeout_ms = 100; // don't push too hard
-constexpr uint64_t hours_to_usec = (uint64_t)60*60*1000000;
+constexpr uint64_t hours_to_usec = (uint64_t) 60 * 60 * 1000 * 1000;
+constexpr uint64_t gpos_fresh_timeout = 2 * 1000 * 1000;
 
 using statistics::Variance;
 
@@ -213,7 +215,59 @@ bool is_recheck_required() {
 		return true;
 	}
 
-	// Assuming temperature will be available faster than GPS
+	// Wait for inav to consider GPS valid before the check
+	int gpos_sub = orb_subscribe(ORB_ID(vehicle_global_position));
+	vehicle_global_position_s gpos_data;
+	bool updated = false;
+	while ((!updated || (hrt_absolute_time() - gpos_data.timestamp) > gpos_fresh_timeout) && g_thread_should_run) {
+		/*
+		 * Use sleep to periodically check if thread should stop. Initial sleep is ok as gpos, probably, is not ready
+		 */
+		DOG_PRINT("Waiting for GPOS\n");
+		sleep(2);
+		orb_check(gpos_sub, &updated);
+		if (updated) {
+			orb_copy(ORB_ID(vehicle_global_position), gpos_sub, &gpos_data);
+		}
+	}
+	orb_unsubscribe(gpos_sub);
+
+	// Now actual GPS check
+	int gps_sub = orb_subscribe(ORB_ID(vehicle_gps_position));
+	vehicle_gps_position_s gps_data;
+	bool gps_ok = false;
+	updated = (orb_copy(ORB_ID(vehicle_gps_position), gps_sub, &gps_data)) == 0;
+
+	while ((!updated || gps_data.timestamp_time == 0
+			|| gps_data.timestamp_variance == 0 || gps_data.fix_type < 2)
+			&& g_thread_should_run) {
+		/*
+		 * If GPS data is bad, it won't change as fast as topic update rate, so just sleep between checks
+		 */
+		DOG_PRINT("Waiting for the GPS\n");
+		sleep(2);
+		orb_check(gps_sub, &updated);
+		if (updated) {
+			orb_copy(ORB_ID(vehicle_gps_position), gps_sub, &gps_data);
+		}
+	}
+	orb_unsubscribe(gps_sub);
+	if (updated && gps_data.timestamp_time != 0) {
+		DOG_PRINT("GPS time: %lld\n", gps_data.time_gps_usec);
+	}
+	// If time ran backwards or there there is no GPS lock, then GPS is invalid by default
+	if (updated && gps_data.timestamp_time != 0 && gps_data.time_gps_usec >= last_check_time
+			&& gps_data.timestamp_variance != 0 && gps_data.fix_type >= 2) {
+		if (gps_data.time_gps_usec <= last_check_time + time_threshold) {
+			gps_ok = true;
+		}
+	}
+
+	if (!gps_ok){
+		return true;
+	}
+
+	// Poll temperature second to allow the board to heat up while waiting for GPS
 	int sens_comb_sub = orb_subscribe(ORB_ID(sensor_combined));
 	sensor_combined_s sens_comb;
 	uint32_t retry_count = 10;
@@ -241,42 +295,9 @@ bool is_recheck_required() {
 		// Panic in case we failed to get temperature in 10 seconds
 		return true;
 	}
-
-	int gps_sub = orb_subscribe(ORB_ID(vehicle_gps_position));
-	vehicle_gps_position_s gps_data;
-	bool updated = false;
-
-	// TODO! [AK] Consider waiting a bit after getting the first GPS time. Or EPH/EPV threshold
-	while ((!updated || gps_data.timestamp_time == 0
-			|| gps_data.timestamp_variance == 0 || gps_data.fix_type < 2)
-			&& g_thread_should_run) {
-		/*
-		 * Use sleep instead of poll, because gps topic will be updating long before we get GPS lock
-		 * It's not a problem to sleep on the first entry - most probably, GPS is not ready yet anyhow
-		 */
-		DOG_PRINT("Waiting for the <s>sun</s> GPS\n");
-		sleep(2);
-		orb_check(gps_sub, &updated);
-		if (updated) {
-			orb_copy(ORB_ID(vehicle_gps_position), gps_sub, &gps_data);
-		}
+	else {
+		return false;
 	}
-	orb_unsubscribe(gps_sub);
-	if (updated && gps_data.timestamp_time != 0) {
-		DOG_PRINT("GPS time: %lld\n", gps_data.time_gps_usec);
-	}
-	// If time ran backwards or there there is no GPS lock - trigger the check by default
-	if (updated && gps_data.timestamp_time != 0 && gps_data.time_gps_usec >= last_check_time
-			&& gps_data.timestamp_variance != 0 && gps_data.fix_type >= 2) {
-		if (gps_data.time_gps_usec > last_check_time + time_threshold) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
-
-	return true; // By default trigger recheck. Better to be safe than sorry.
 }
 
 void update_validation_conditions() {
@@ -289,17 +310,17 @@ void update_validation_conditions() {
 		param_set(param_find("SVAL_LAST_TEMP"), &sens_comb.accelerometer_temperature);
 		params_need_saving = true;
 	}
+	orb_unsubscribe(sens_comb_sub);
 
 	int gps_sub = orb_subscribe(ORB_ID(vehicle_gps_position));
 	vehicle_gps_position_s gps_data;
-	orb_copy(ORB_ID(vehicle_gps_position), gps_sub, &gps_data);
+	res = orb_copy(ORB_ID(vehicle_gps_position), gps_sub, &gps_data);
 	if (res == 0 && gps_data.timestamp_time > 0
 			&& gps_data.timestamp_variance != 0 && gps_data.fix_type >= 2) {
 		uint32_t time_hours = gps_data.time_gps_usec / hours_to_usec;
 		param_set(param_find("SVAL_LAST_DATE"), &time_hours);
 		params_need_saving = true;
 	}
-	orb_unsubscribe(sens_comb_sub);
 	orb_unsubscribe(gps_sub);
 	if (params_need_saving) {
 		param_save_default();
@@ -388,7 +409,7 @@ extern "C" __EXPORT int sensor_validation_main(int argc, char* argv[]) {
 		if (!g_thread_running && !g_thread_should_run) {
 			g_thread_should_run = true;
 			task_spawn_cmd("sens_validation_daemon",
-				SCHED_DEFAULT,SCHED_PRIORITY_DEFAULT, 2000,
+				SCHED_DEFAULT,SCHED_PRIORITY_DEFAULT, 2500,
 				thread_main,
 				(const char**) NULL);
 		}
