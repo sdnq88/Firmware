@@ -8,6 +8,7 @@ namespace Service
 {
 
 bool pairing_on = false;
+bool drop_all_connections_flag = false;
 
 void
 turn_pairing_on(){
@@ -27,6 +28,16 @@ toggle_pairing(){
 bool
 get_pairing_status(){
     return pairing_on;
+}
+
+void
+drop_all_connections(){
+    drop_all_connections_flag = true;
+}
+
+void
+drop_all_connections_done(){
+    drop_all_connections_flag = false;
 }
 
 }
