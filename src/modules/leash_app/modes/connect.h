@@ -37,7 +37,6 @@ private:
     // == methods ==
     void getConState();
     bool receiveActivityParams();
-    void BTPairing(bool start = 1);
     void setState(State state);
 };
 

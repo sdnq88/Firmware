@@ -853,6 +853,15 @@ void Screen::showInfo(int info, int error, int leashBattery)
             text[2].font = &Font::LucideGrandeSmall;
             break;
 
+        case INFO_REBOOT:
+            text[0].text = "Rebooting";
+            text[0].font = &Font::LucideGrandeMed;
+            text[1].text = error == 0 ? "AirLeash" : "AirDog";
+            text[1].font = &Font::LucideGrandeMed;
+            text[2].text = "please wait";
+            text[2].font = &Font::LucideGrandeTiny;
+            break;
+
         case INFO_ERROR:
             const char *errorText = getErrorMessageText(error, &title);
 

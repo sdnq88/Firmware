@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include <systemlib/param/param.h>
+#include <lib/activity/activity_files.h>
 
 #include "eparam.h"
 
@@ -269,6 +270,7 @@ int eparam_factoryReset(void)
         printf("failed to get MAV_SYS_ID value");
     }
 
+    activity_factory_reset();
     param_reset_all();
 
     eparam_load(factoryFileName);
@@ -289,6 +291,7 @@ int eparam_factoryReset(void)
         printf("failed to set MAV_SYS_ID value");
     }
 
+    param_save_default();
     return 0;
 }
 

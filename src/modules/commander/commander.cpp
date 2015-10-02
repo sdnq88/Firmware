@@ -717,7 +717,7 @@ bool handle_command(struct vehicle_status_s *status_local
             }
             else if (cmd->param1 == REMOTE_CMD_PARAM_RESET) {
                 eparam_factoryReset();
-                param_save_default();
+                systemreset(false);
             }
             /* process user camera controll */
             else if (cmd->param1 == REMOTE_CMD_CAM_UP

@@ -69,13 +69,3 @@ namespace Files
 }
 // end of namespace Activity
 
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void activity_factory_reset();
-
-#ifdef __cplusplus
-}
-#endif

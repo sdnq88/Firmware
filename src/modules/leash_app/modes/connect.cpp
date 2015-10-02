@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 
+#include "../bluetoothhelper.h"
 #include "../datamanager.h"
 #include "../button_handler.h"
 #include "../displayhelper.h"
@@ -13,12 +14,6 @@
 #include "../../mavlink/mavlink_defines.h"
 
 #include <commander/commander_error.h>
-
-#define _BLUETOOTH21_BASE       0x2d00
-
-#define PAIRING_ON          _IOC(_BLUETOOTH21_BASE, 0)
-#define PAIRING_OFF         _IOC(_BLUETOOTH21_BASE, 1)
-
 
 namespace modes
 {
@@ -56,6 +51,9 @@ void ModeConnect::listenForEvents(bool awaitMask[])
 
         case State::CHECK_MAVLINK:
             awaitMask[FD_MavlinkStatus] = 1;
+            break;
+
+        default:
             break;
     }
 
@@ -95,7 +93,7 @@ Base* ModeConnect::doEvent(int orbId)
                     break;
                 case State::PAIRING:
                     DOG_PRINT("[modes]{connection} stop pairing!\n");
-                    BTPairing(false);
+                    BluetoothHelper::pairing(false);
                     break;
                 default:
                     DOG_PRINT("[modes]{connection} menu button not handled for this state:%d\n"
@@ -199,20 +197,6 @@ void ModeConnect::getConState()
     }
 }
 
-void ModeConnect::BTPairing(bool start)
-{
-    int fd = open("/dev/btctl", 0);
-
-    if (fd > 0) {
-        if (start)
-            ioctl(fd, PAIRING_ON, 0);
-        else
-            ioctl(fd, PAIRING_OFF, 0);
-    }
-
-    close(fd);
-}
-
 void ModeConnect::setState(State state)
 {
     currentState = state;
@@ -225,7 +209,7 @@ void ModeConnect::setState(State state)
 
         case State::PAIRING:
             forcing_pairing = true;
-            BTPairing();
+            BluetoothHelper::pairing();
             DisplayHelper::showInfo(INFO_PAIRING);
             break;
 

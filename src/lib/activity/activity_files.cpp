@@ -22,6 +22,7 @@
 
 #include "activity_lib_constants.h"
 #include "activity_files.hpp"
+#include "activity_files.h"
 #include "activity_config_list.hpp"
 
 
@@ -319,10 +320,15 @@ reset_activity_params_file(int activity) {
 
     printf("Resetting activity params file %s\n", activity_file_pathname);
 
-    for (int p=0;p<ALLOWED_PARAM_COUNT;p++) 
-        fprintf(activity_file, "%i:%.6f\n", ALLOWED_PARAMS[p].id, (double)DEFAULT_VALUES[activity][p]); 
+    if (activity_file != NULL)
+    {
+        for (int p=0;p<ALLOWED_PARAM_COUNT;p++)
+        {
+            fprintf(activity_file, "%i:%.6f\n", ALLOWED_PARAMS[p].id, (double)DEFAULT_VALUES[activity][p]);
+        }
 
-    fclose(activity_file);
+        fclose(activity_file);
+    }
     return true;
 }
 

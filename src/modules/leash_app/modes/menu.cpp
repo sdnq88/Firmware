@@ -7,11 +7,13 @@
 #include <uORB/topics/vehicle_command.h>
 #include <eparam/eparam.h>
 #include <systemlib/param/param.h>
+#include <systemlib/systemlib.h>
 
 #include "main.h"
 #include "connect.h"
 #include "calibrate.h"
 #include "acquiring_gps.h"
+#include "../bluetoothhelper.h"
 #include "../displayhelper.h"
 #include "../uorb_functions.h"
 
@@ -616,14 +618,19 @@ Base* Menu::makeAction()
             if (calibrateMode == CALIBRATE_LEASH)
             {
                 eparam_factoryReset();
-                param_save_default();
-
+                DisplayHelper::showInfo(INFO_REBOOT, 0);
+                sleep(3);
+                systemreset(false);
+                sleep(3);
                 showEntry();
             }
             else if (calibrateMode == CALIBRATE_AIRDOG)
             {
                 sendAirDogCommnad(VEHICLE_CMD_NAV_REMOTE_CMD, REMOTE_CMD_PARAM_RESET);
-                showEntry();
+                DisplayHelper::showInfo(INFO_REBOOT, 0);
+                sleep(3);
+                BluetoothHelper::disconnect();
+                nextMode = new ModeConnect(ModeConnect::State::DISCONNECTED);
             }
             break;
         }

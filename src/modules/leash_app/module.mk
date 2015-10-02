@@ -12,11 +12,13 @@ SRCS			= \
     modes/menu.cpp \
     modes/sensorvalidation.cpp \
     modes/service.cpp \
+    bluetoothhelper.cpp \
     main.cpp  \
     uorb_functions.cpp  \
     datamanager.cpp \
     displayhelper.cpp \
     button_handler.cpp \
+
 
 # Required by mavlink_bridge_header
 INCLUDE_DIRS	 += $(MAVLINK_SRC)
