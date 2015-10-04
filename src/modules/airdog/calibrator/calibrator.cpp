@@ -240,7 +240,7 @@ __EXPORT bool calibrate_magnetometer(int mavlink_fd, unsigned int sample_count,
 	}
 }
 
-__EXPORT bool calibrate_accelerometer(int mavlink_fd) {
+__EXPORT bool calibrate_accelerometer(int mavlink_fd, bool wait_for_console) {
 	CALIBRATION_RESULT res;
 	const char* axis_labels[] = {
 			"+x",
@@ -255,7 +255,9 @@ __EXPORT bool calibrate_accelerometer(int mavlink_fd) {
 		warnx("Accel calibration could not find beeper device. Aborting.");
 		return (false);
 	}
-	prepare("Accel", beeper_fd);
+	if (!wait_for_console) { // Skip useless waiting if we're operating from console
+		prepare("Accel", beeper_fd);
+	}
 
 	struct calibrator_s calibrator;
 	orb_advert_t to_calibrator = 0;
@@ -291,7 +293,33 @@ __EXPORT bool calibrate_accelerometer(int mavlink_fd) {
 
 			orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
-			res = calib.sample_axis();
+			if (wait_for_console) {
+				printf("------ 00: Press Space to advance\n");
+				pollfd console_poll;
+				console_poll.fd = fileno(stdin);
+				console_poll.events = POLLIN;
+				int ret = poll(&console_poll, 1, 20000);
+				if (ret != 1) {
+					printf("------ 20: Poll error in manual calibration. Aborting\n");
+					res = CALIBRATION_RESULT::FAIL;
+					break;
+				}
+				char in_c;
+				read(fileno(stdin), &in_c, 1);
+				if (in_c != ' ') {
+					printf("------ 21: Aborting on user's request\n");
+					res = CALIBRATION_RESULT::FAIL;
+					break;
+				}
+				else {
+					printf("------ 01: Sampling\n");
+				}
+				res = calib.sample_axis(100000); // Detect axis faster as we are quite sure we're standing still
+			}
+			else {
+				res = calib.sample_axis();
+			}
+
 			beep(beeper_fd, TONES::STOP);
 			if (res == CALIBRATION_RESULT::SUCCESS) {
 				beep(beeper_fd, TONES::WORKING);
@@ -347,6 +375,15 @@ __EXPORT bool calibrate_accelerometer(int mavlink_fd) {
 	calibrator.result = res;
 
 	orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+
+	if (wait_for_console) {
+		if (res == CALIBRATION_RESULT::SUCCESS) {
+			printf("------ 03: Calibration succeeded\n");
+		}
+		else {
+			printf("------ 22: Calibration failed\n");
+		}
+	}
 
 	print_results(res, "accel", beeper_fd, mavlink_fd);
 	close(beeper_fd);
@@ -572,7 +609,7 @@ inline void print_scales(SENSOR_TYPE sensor, int mavlink_fd) {
 #define MSG_CALIBRATION_WRONG_MODULE "Unknown module name \"%s\". Try accel, gyro, mag, baro, airspeed, rc, all\n"
 #define MSG_CALIBRATION_GYRO_WRONG_PARAM "0 or 3 parameters required.\nValid ranges for samples 1-1000000, for errors 0-5000, for timeout 2-10000.\n"
 #define MSG_CALIBRATION_MAG_WRONG_PARAM "0 or 4 parameters required.\nValid ranges for samples 100-total_time/5, for errors 0-sample_count,\nfor time 1-1000000, for gap 1-100.\n"
-#define MSG_CALIBRATION_ACCEL_WRONG_PARAM "No parameters supported.\n"
+#define MSG_CALIBRATION_ACCEL_WRONG_PARAM "Only 'manual' parameter supported.\n"
 
 extern "C" __EXPORT int calibrator_main(int argc, char ** argv)
 {
@@ -586,11 +623,19 @@ extern "C" __EXPORT int calibrator_main(int argc, char ** argv)
 	sensname = argv[1];
 
 	if (strcmp(sensname, "accel") == 0) {
-		if (argc != 2) {
+		if (argc > 3) {
 			fprintf(stderr, MSG_CALIBRATION_ACCEL_WRONG_PARAM);
 			return 1;
 		}
-		return ((int) !calibrate_accelerometer());
+		bool wait_for_console = false;
+		if (argc == 3) {
+			if (strcmp(argv[2], "manual") != 0) {
+				fprintf(stderr, MSG_CALIBRATION_ACCEL_WRONG_PARAM);
+				return 1;
+			}
+			wait_for_console = true;
+		}
+		return ((int) !calibrate_accelerometer(0, wait_for_console));
 	}
 	else if (strcmp(sensname,"gyro") == 0) {
 		if (argc == 2) {

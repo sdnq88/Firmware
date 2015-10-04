@@ -51,14 +51,14 @@ CALIBRATION_RESULT AccelCalibrator::init() {
 	return CALIBRATION_RESULT::SUCCESS;
 }
 
-CALIBRATION_RESULT AccelCalibrator::sample_axis() {
+CALIBRATION_RESULT AccelCalibrator::sample_axis(uint64_t still_period) {
 
 	// Do not allow running before init was run
 	if (!inprogress) {
 		return CALIBRATION_RESULT::FAIL;
 	}
 
-	current_axis = detect_orientation();
+	current_axis = detect_orientation(still_period);
 	if (current_axis < 0) {
 		// TODO! Consider different error here
 		return CALIBRATION_RESULT::SENSOR_DATA_FAIL;
@@ -111,7 +111,7 @@ CALIBRATION_RESULT AccelCalibrator::calculate_and_save() {
 }
 
 // Use the Exponential Movement Averaging algorithm to detect still position and find orientation
-int AccelCalibrator::detect_orientation() {
+int AccelCalibrator::detect_orientation(uint64_t still_period) {
 	sensor_combined_s report;
 	int res;
 
@@ -122,8 +122,6 @@ int AccelCalibrator::detect_orientation() {
 	hrt_abstime curr_time = 0;
 	hrt_abstime still_start = 0;
 	hrt_abstime still_end = 1;
-	// 2 secs keeping still is ok
-	hrt_abstime still_period = 2 * 1000 * 1000;
 
 	// EMA period weighting coefficient
 	float ema_len = 0.5f;
