@@ -1665,26 +1665,33 @@ int commander_thread_main(int argc, char *argv[])
 			orb_copy(ORB_ID(target_global_position), target_position_sub, &target_position);
 		}
 
-		// Less strict checks while we are in air
-		if (status.arming_state == ARMING_STATE_ARMED) {
-			if (trg_sens_valid && target_position.sensor_status <= SENSOR_STATUS_FAIL) {
-				QLOG_literal("Target sensors lost mid-flight!");
-				trg_sens_valid = false;
-			}
-			else if (!trg_sens_valid && target_position.sensor_status > SENSOR_STATUS_FAIL ) {
-				QLOG_literal("Target sensors regained!");
-				trg_sens_valid = true;
-			}
-		}
-		// Stricter checks while we are on the ground
-		else {
-			if (trg_sens_valid && target_position.sensor_status != SENSOR_STATUS_OK) {
-				trg_sens_valid = false;
-			}
-			else if (!trg_sens_valid && target_position.sensor_status == SENSOR_STATUS_OK) {
-				trg_sens_valid = true;
-			}
-		}
+        if (status.hil_state == HIL_STATE_ON)
+        {
+            trg_sens_valid = true;
+        }
+        else
+        {
+            // Less strict checks while we are in air
+            if (status.arming_state == ARMING_STATE_ARMED) {
+                if (trg_sens_valid && target_position.sensor_status <= SENSOR_STATUS_FAIL) {
+                    QLOG_literal("Target sensors lost mid-flight!");
+                    trg_sens_valid = false;
+                }
+                else if (!trg_sens_valid && target_position.sensor_status > SENSOR_STATUS_FAIL ) {
+                    QLOG_literal("Target sensors regained!");
+                    trg_sens_valid = true;
+                }
+            }
+            // Stricter checks while we are on the ground
+            else {
+                if (trg_sens_valid && target_position.sensor_status != SENSOR_STATUS_OK) {
+                    trg_sens_valid = false;
+                }
+                else if (!trg_sens_valid && target_position.sensor_status == SENSOR_STATUS_OK) {
+                    trg_sens_valid = true;
+                }
+            }
+        }
 
 		// TODO! AK: Consider checking "use_alt" parameter for epv error checking
 		/* recheck target position validity */
