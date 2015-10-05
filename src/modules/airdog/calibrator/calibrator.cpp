@@ -378,7 +378,7 @@ __EXPORT bool calibrate_accelerometer(int mavlink_fd, bool wait_for_console) {
 
 	if (wait_for_console) {
 		if (res == CALIBRATION_RESULT::SUCCESS) {
-			printf("------ 03: Calibration succeeded\n");
+			printf("------ 02: Calibration succeeded\n");
 		}
 		else {
 			printf("------ 22: Calibration failed\n");
