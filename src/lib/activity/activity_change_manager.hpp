@@ -64,6 +64,9 @@ class __EXPORT ActivityChangeManager {
 
         bool isUpdateRequired();
         void init();
+
+        bool get_param_saved_value(const char * pram_name, float &value);
+        bool get_param_tmp_value(const char * param_name, float &value);
        
     private:
 
@@ -75,7 +78,7 @@ class __EXPORT ActivityChangeManager {
 
         int activity;
         int param_count;
-        int cur_param_id;
+        int cur_param_idx;
 
         bool params_up_to_date; 
         int activity_params_sub;

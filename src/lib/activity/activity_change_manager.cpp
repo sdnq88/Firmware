@@ -12,7 +12,7 @@ namespace Activity {
 ActivityChangeManager::ActivityChangeManager() :
     activity(-1),
     param_count(ALLOWED_PARAM_COUNT),
-    cur_param_id(0),
+    cur_param_idx(0),
     params_up_to_date(false),
     activity_params_sub(-1)
 {
@@ -50,7 +50,7 @@ bool ActivityChangeManager::isUpdateRequired()
 void
 ActivityChangeManager::init()
 {
-    cur_param_id = 0;
+    cur_param_idx = 0;
     params_up_to_date = false;
 }
 
@@ -62,28 +62,59 @@ ActivityChangeManager::set_waiting_for_params(){
 int
 ActivityChangeManager::getFollowValue()
 {
-    int result = -1;
 
-    for (int param_idx = 0;param_idx < ALLOWED_PARAM_COUNT; param_idx++){
-        if (strncmp(ALLOWED_PARAMS[param_idx].name, "NAV_AFOL_MODE", 20) == 0) {
-            result = (int)params[param_idx].saved_value;
-        }
+    int result = -1;
+    float val;
+
+    if (get_param_saved_value("NAV_AFOL_MODE", val)) {
+        result = int(val);
     }
+
     return result;
 }
 
 int
 ActivityChangeManager::getLandValue()
 {
-
     int result = -1;
+    float val;
+
+    if (get_param_saved_value("A_BSC_SAF_ACT", val)) {
+        result = int(val);
+    }
+
+    return result;
+}
+
+bool
+ActivityChangeManager::get_param_saved_value(const char * param_name, float &value){
+
+    bool found = false;
 
     for (int param_idx = 0;param_idx < ALLOWED_PARAM_COUNT; param_idx++){
-        if (strncmp(ALLOWED_PARAMS[param_idx].name, "A_BSC_SAF_ACT", 20) == 0) {
-            result = (int)params[param_idx].saved_value;
+        if (strncmp(ALLOWED_PARAMS[param_idx].name, param_name, 25) == 0) {
+            found = true;
+            value = params[param_idx].saved_value;
         }
     }
-    return result;
+
+    return found;
+
+}
+
+bool
+ActivityChangeManager::get_param_tmp_value(const char * param_name, float &value){
+
+    bool found = false;
+
+    for (int param_idx = 0;param_idx < ALLOWED_PARAM_COUNT; param_idx++){
+        if (strncmp(ALLOWED_PARAMS[param_idx].name, param_name, 25) == 0) {
+            found = true;
+            value = params[param_idx].value;
+        }
+    }
+
+    return found;
 
 }
 
@@ -294,24 +325,38 @@ ParamChangeManager *
 ActivityChangeManager::get_next_visible_param(){
 
     int it = 0;
+
     while (true) {
 
-        cur_param_id++;
+        cur_param_idx++; 
+        if (cur_param_idx == ALLOWED_PARAM_COUNT)
+            cur_param_idx = 0;
 
-        if (cur_param_id == ALLOWED_PARAM_COUNT)
-            cur_param_id = 0;
-
-        if (it>=ALLOWED_PARAM_COUNT)
+        if (it>ALLOWED_PARAM_COUNT)
             break;
 
-        if (params[cur_param_id].config != nullptr) {
-            break;
+        if (params[cur_param_idx].config != nullptr) {
+
+            if (ALLOWED_PARAMS[cur_param_idx].visible_if_afol_mode == -1) {
+                // No rule for afol mode - we found our next visible param
+                break;
+            }
+            else {
+                
+                float val;
+                if (get_param_tmp_value("NAV_AFOL_MODE", val)){
+                    if (ALLOWED_PARAMS[cur_param_idx].visible_if_afol_mode == int(val)){
+                        // Matching the rule - found
+                        break;
+                    }
+                }
+            }
         }
 
         it++;
     }
 
-    return &params[cur_param_id];
+    return &params[cur_param_idx];
 }
 
 ParamChangeManager *
@@ -320,22 +365,37 @@ ActivityChangeManager::get_current_param(){
     int it = 0;
     while (true) {
 
-        if (params[cur_param_id].config != nullptr) {
-            break;
+        if (params[cur_param_idx].config != nullptr) { 
+
+            if (ALLOWED_PARAMS[cur_param_idx].visible_if_afol_mode == -1) {
+                // No rule for afol mode - we found our next visible param
+                break;
+            }
+            else {
+                
+                float val;
+                if (get_param_tmp_value("NAV_AFOL_MODE", val)){
+                    if (ALLOWED_PARAMS[cur_param_idx].visible_if_afol_mode == int(val)){
+                        // Matching the rule - found
+                        break;
+                    }
+                }
+            }
+
         }
 
-        cur_param_id++;
+        cur_param_idx++;
 
-        if (cur_param_id == ALLOWED_PARAM_COUNT)
-            cur_param_id = 0;
+        if (cur_param_idx == ALLOWED_PARAM_COUNT)
+            cur_param_idx = 0;
 
-        if (it>=ALLOWED_PARAM_COUNT)
+        if (it>ALLOWED_PARAM_COUNT)
             break;
 
         it++;
     }
 
-    return &params[cur_param_id];
+    return &params[cur_param_idx];
 }
 
 ParamChangeManager *
@@ -344,23 +404,39 @@ ActivityChangeManager::get_prev_visible_param(){
     int it = 0;
     while (true) {
 
-        cur_param_id--;
+        cur_param_idx--;
 
-        if (cur_param_id < 0) {
-            cur_param_id = ALLOWED_PARAM_COUNT-1;
+        if (cur_param_idx < 0) {
+            cur_param_idx = ALLOWED_PARAM_COUNT-1;
         }
 
         if (it >= ALLOWED_PARAM_COUNT)
             break;
 
-        if (params[cur_param_id].config != nullptr) {
-           break;
-         }
+        if (params[cur_param_idx].config != nullptr) { 
+
+            if (ALLOWED_PARAMS[cur_param_idx].visible_if_afol_mode == -1) {
+                // No rule for afol mode - we found our next visible param
+                break;
+            }
+            else {
+                
+                float val;
+                if (get_param_tmp_value("NAV_AFOL_MODE", val)){
+                    if (ALLOWED_PARAMS[cur_param_idx].visible_if_afol_mode == int(val)){
+                        // Matching the rule - found
+                        break;
+                    }
+                }
+            }
+
+        }
+
 
         it++;
     }
 
-    return &params[cur_param_id];
+    return &params[cur_param_idx];
 }
 
 bool
@@ -403,7 +479,7 @@ ActivityChangeManager::process_received_params(activity_params_s activity_params
     }
 
     params_up_to_date = true;
-    cur_param_id = 0;
+    cur_param_idx = 0;
 
     return true;
 }

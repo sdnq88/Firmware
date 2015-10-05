@@ -345,7 +345,7 @@ init_activity_config_list(){
             {
                 //           Param name           Type         Device  Default Istart Iend  Step  Values
                 ParamConfig("NAV_AFOL_MODE",      VALUES_STR,    DOG,      -1,    -1,  -1,    {2}                ),
-                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,     DOG,      -1,    -1,  -1,    {1}                ),
+                ParamConfig("A_SAH_NO_SPOT",      INTERVAL,      DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("A_BSC_SAF_ACT",      VALUES_STR,    DOG,      -1,    -1,  -1,    {1}                ),
                 ParamConfig("FOL_RPT_ALT",        VALUES_STR,    DOG,      -1,    -1,  -1,    {0}                ),
             });
