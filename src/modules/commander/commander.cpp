@@ -1978,7 +1978,7 @@ int commander_thread_main(int argc, char *argv[])
 			}
 
 			/* check if left stick is in lower right position and we're in MANUAL mode -> arm */
-			if (status.arming_state == ARMING_STATE_STANDBY &&
+			if ( (status.arming_state == ARMING_STATE_STANDBY || status.arming_state == ARMING_STATE_INIT) &&
 			    sp_man.r > STICK_ON_OFF_LIMIT && sp_man.z < 0.1f) {
 				if (stick_on_counter > STICK_ON_OFF_COUNTER_LIMIT) {
 
@@ -1988,6 +1988,8 @@ int commander_thread_main(int argc, char *argv[])
 					 */
 					if (status.main_state != MAIN_STATE_MANUAL) {
 						print_reject_arm("NOT ARMING: Switch to MANUAL mode first.");
+					} else if (status.arming_state != ARMING_STATE_STANDBY) {
+						print_reject_arm("NOT ARMING: Drone is not ready. Check sensors.");
 					} else {
 						arming_ret = arming_state_transition(&status, &safety, ARMING_STATE_ARMED, &armed, true /* fRunPreArmChecks */, mavlink_fd);
 						if (arming_ret == TRANSITION_CHANGED) {
