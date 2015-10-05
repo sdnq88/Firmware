@@ -44,10 +44,11 @@ usage()
 
 #define _BLUETOOTH21_BASE       0x2d00
 
-#define PAIRING_ON           _IOC(_BLUETOOTH21_BASE, 0)
-#define PAIRING_OFF          _IOC(_BLUETOOTH21_BASE, 1)
-#define PAIRING_TOGGLE       _IOC(_BLUETOOTH21_BASE, 2)
+#define PAIRING_ON			 _IOC(_BLUETOOTH21_BASE, 0)
+#define PAIRING_OFF			 _IOC(_BLUETOOTH21_BASE, 1)
+#define PAIRING_TOGGLE		 _IOC(_BLUETOOTH21_BASE, 2)
 #define DROP_ALL_CONNECTIONS _IOC(_BLUETOOTH21_BASE, 3)
+#define RESET_MODULE         _IOC(_BLUETOOTH21_BASE, 4)
 
 static int _bt_sub = -1;
 static struct bt_state_s _bt_state;
@@ -126,6 +127,17 @@ void drop_all_bt_connections(){
 
     close(fd);
 
+}
+
+
+void reset_bt_module(){
+
+    int fd = open("/dev/btctl", 0);
+
+    if (fd > 0) {
+        ioctl(fd, RESET_MODULE, 0);
+    }
+    close(fd);
 
 }
 
@@ -168,8 +180,10 @@ main(int argc, char const * const * argv)
             usage();
         }
     }
-    else if (streq(argv[1], "drop_connections")) {
-            drop_all_bt_connections();
+    else if (streq(argv[1], "drop_bt_connections")) {
+        drop_all_bt_connections();
+    } else if (streq(argv[1], "reset_bt_module")){
+        reset_bt_module();
     } else if (streq(argv[1], "activity")) {
 
         if (streq(argv[2], "test")) {

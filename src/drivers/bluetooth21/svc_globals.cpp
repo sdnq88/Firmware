@@ -9,6 +9,7 @@ namespace Service
 
 bool pairing_on = false;
 bool drop_all_connections_flag = false;
+bool reset_module_flag = false;
 
 void
 turn_pairing_on(){
@@ -38,6 +39,16 @@ drop_all_connections(){
 void
 drop_all_connections_done(){
     drop_all_connections_flag = false;
+}
+
+void
+reset_module(){
+    reset_module_flag = true;
+}
+
+void
+reset_module_done(){
+    reset_module_flag = false;
 }
 
 }
