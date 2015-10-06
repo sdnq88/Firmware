@@ -60,6 +60,7 @@
 #include <math.h>
 #include <poll.h>
 #include <float.h>
+#include <board_config.h>
 
 #include <uORB/uORB.h>
 #include <uORB/topics/sensor_combined.h>
@@ -266,6 +267,7 @@ int commander_set_error(int error_code)
 {
 	status.error_code = error_code;
 	status.error_stamp++;
+	return 0;
 }
 
 int commander_main(int argc, char *argv[])
@@ -444,6 +446,28 @@ transition_result_t arm_disarm(bool arm, const int mavlink_fd_local, const char 
 	}
 
 	return arming_res;
+}
+
+#define _BLUETOOTH21_BASE       0x2d00
+#define DISCONNECT         _IOC(_BLUETOOTH21_BASE, 3)
+#define RESET_MODULE         _IOC(_BLUETOOTH21_BASE, 4)
+int Bluetooth_disconnect()
+{
+    int result = 0;
+    int fd = open("/dev/btctl", 0);
+
+    if (fd == -1) {
+        result = false;
+    }
+
+    if (result == 0)
+    {
+        ioctl(fd, DISCONNECT, 0);
+        ioctl(fd, RESET_MODULE, 0);
+    }
+
+    close(fd);
+    return result;
 }
 
 bool handle_command(struct vehicle_status_s *status_local
@@ -716,8 +740,17 @@ bool handle_command(struct vehicle_status_s *status_local
             
             }
             else if (cmd->param1 == REMOTE_CMD_PARAM_RESET) {
+                // command supported only by airdog
+#if defined(CONFIG_ARCH_BOARD_PX4FMU_V2) || defined(CONFIG_ARCH_BOARD_AIRDOG_FMU)
                 eparam_factoryReset();
+                Bluetooth_disconnect();
+                // power off/on bluetooth module
+                // need to reset bluetooth
+                stm32_gpiowrite(GPIO_VDD_PERIPHERY_EN, 0);
+                sleep(1);
+                stm32_gpiowrite(GPIO_VDD_PERIPHERY_EN, 1);
                 systemreset(false);
+#endif
             }
             /* process user camera controll */
             else if (cmd->param1 == REMOTE_CMD_CAM_UP

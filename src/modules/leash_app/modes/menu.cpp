@@ -627,7 +627,7 @@ Base* Menu::makeAction()
             else if (calibrateMode == CALIBRATE_AIRDOG)
             {
                 sendAirDogCommnad(VEHICLE_CMD_NAV_REMOTE_CMD, REMOTE_CMD_PARAM_RESET);
-                DisplayHelper::showInfo(INFO_REBOOT, 0);
+                DisplayHelper::showInfo(INFO_REBOOT, 1);
                 sleep(3);
                 BluetoothHelper::disconnect();
                 nextMode = new ModeConnect(ModeConnect::State::DISCONNECTED);
