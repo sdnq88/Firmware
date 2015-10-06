@@ -244,7 +244,7 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_AIR, 45.0f);
  * @max 90.0
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 20.0f);
+PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 45.0f);
 
 /**
  * Landing descend rate

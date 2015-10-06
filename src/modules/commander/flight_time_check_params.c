@@ -39,4 +39,4 @@ PARAM_DEFINE_INT32(A_FTC_FLTILT_MS, 3000);
 /**
  * Configure, in degrees, the maximum tilt allowed during landing. Limited to [FTC_LTILT_DEG_MIN;FTC_LTILT_DEG_MAX].
  */
-PARAM_DEFINE_INT32(A_FTC_LTILT_DEG, 45);
+PARAM_DEFINE_INT32(A_FTC_LTILT_DEG, 55);
