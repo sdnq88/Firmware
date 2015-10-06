@@ -244,6 +244,8 @@ echo "Interface OK" >> $LOG_FILE
 sh /etc/init.d/rc.mc_apps
 echo "MC_apps OK" >> $LOG_FILE
 
+sensor_validation start
+
 #
 # Start the navigator
 #
