@@ -166,6 +166,8 @@ private:
     bool 								_home_valid; /**< We can't relay on home_timestamp for the time being */
 
 	struct {
+        param_t max_sp_distance_regular;
+        param_t max_sp_distance_max;
         param_t cbp_max_init_speed;
         param_t cam_pitch_step;
         param_t cam_yaw_step;
@@ -226,6 +228,8 @@ private:
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
+        float max_sp_distance_regular;
+        float max_sp_distance_max;
         float cbp_max_init_speed;
         float cam_pitch_step;
         float cam_yaw_step;
@@ -474,6 +478,12 @@ private:
 	 */
 	void		task_main();
 
+    /* author:       Max <max@airdog.com>
+     * description:  Reject any setpoint further than value defined in parameters
+     * return:       True if no reset needed, False if reset needed
+     */
+    bool        validate_setpoint_distance();
+
 	/**
      * Change setpoint Z coordinate according to sonar measurements
      */
@@ -596,6 +606,8 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_tpos_predictor.set_min_latency(20000);
 	_tpos_predictor.set_max_latency(1000000);
 
+    _params_handles.max_sp_distance_regular = param_find("A_M_SPDIST_RANGE");
+    _params_handles.max_sp_distance_max = param_find("A_M_SPDIST_MAX");
     _params_handles.cbp_max_init_speed = param_find("CBP_MAX_INIT_SPD");
     _params_handles.cam_pitch_step = param_find("CAM_PITCH_STEP");
     _params_handles.cam_yaw_step = param_find("CAM_YAW_STEP");
@@ -700,6 +712,8 @@ MulticopterPositionControl::parameters_update(bool force)
 	}
 
 	if (updated || force) {
+        param_get(_params_handles.max_sp_distance_regular, &_params.max_sp_distance_regular);
+        param_get(_params_handles.max_sp_distance_max, &_params.max_sp_distance_max);
 		param_get(_params_handles.cbp_max_init_speed, &_params.cbp_max_init_speed);
 		param_get(_params_handles.cam_pitch_step, &_params.cam_pitch_step);
 		param_get(_params_handles.cam_yaw_step, &_params.cam_yaw_step);
@@ -2073,6 +2087,7 @@ MulticopterPositionControl::task_main()
 			}
 
             set_camera_yaw();
+
 			/* fill local position setpoint */
 			_local_pos_sp.timestamp = hrt_absolute_time();
 			_local_pos_sp.x = _pos_sp(0);
@@ -2194,6 +2209,15 @@ MulticopterPositionControl::task_main()
                         }
                     }
 
+                }
+
+                // reset setpoints to current position and nullify speed if setpoint is too far away
+                if (!validate_setpoint_distance())
+                {
+                    _pos_sp(0) = _pos(0);
+                    _pos_sp(1) = _pos(1);
+                    _pos_sp(2) = _pos(2);
+                    _vel_sp.zero();
                 }
 
 				if (!_control_mode.flag_control_altitude_enabled) {
@@ -2629,6 +2653,27 @@ MulticopterPositionControl::task_main()
 
 	_control_task = -1;
 	_exit(0);
+}
+
+bool
+MulticopterPositionControl::validate_setpoint_distance()
+{
+    bool result = false;
+    math::Vector<3> distance = _pos - _pos_sp;
+
+    if(_vstatus.nav_state == NAVIGATION_STATE_RTL)
+    {
+        if (distance.length() < _params.max_sp_distance_max)
+        {
+            result = true;
+        }
+    }
+    else if (distance.length() < _params.max_sp_distance_regular)
+    {
+        result = true;
+    }
+
+    return result;
 }
 
 int

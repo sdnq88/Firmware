@@ -42,6 +42,20 @@
 #include <systemlib/param/param.h>
 
 /**
+ * maximal distance for the setpoint that should be aproximatelly as signal range
+ *
+ * @group airdog
+ * */
+PARAM_DEFINE_FLOAT(A_M_SPDIST_RANGE, 500.0f);
+
+/**
+ * maximal distance for the setpoint that drone can physically reach
+ *
+ * @group airdog
+ * */
+PARAM_DEFINE_FLOAT(A_M_SPDIST_MAX, 8000.0f);
+
+/**
  * cable park maximal initial position taking speed
  *
  * @group cable park
