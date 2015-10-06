@@ -39,6 +39,13 @@ bool fill_calibration_conditions (calibration_values_s *calibration) {
 
 bool set_calibration_parameters (const char* const offset_params[3], const char* const scale_params[3],
 		const char * const date_param, const char * const temp_param, const calibration_values_s &calibration) {
+
+	// Force sensor validation next time before changing any parameters
+	int tmp = 0;
+	if (param_set(param_find("SVAL_LAST_DATE"), &tmp) != 0) {
+		return false;
+	}
+
 	for (int i = 0; i < 3; ++i) {
 		if (param_set(param_find(offset_params[i]), &(calibration.offsets(i))) != 0) {
 			return false;

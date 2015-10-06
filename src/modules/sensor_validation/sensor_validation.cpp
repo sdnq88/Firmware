@@ -15,6 +15,7 @@
 #include <systemlib/err.h>
 #include <systemlib/param/param.h>
 #include <systemlib/systemlib.h>
+#include <uORB/topics/calibrator.h>
 #include <uORB/topics/sensor_combined.h>
 #include <uORB/topics/sensor_status.h>
 #include <uORB/topics/vehicle_attitude.h>
@@ -54,6 +55,9 @@ int thread_main(int argc, char* argv[]) {
 
 	int vstatus_sub = orb_subscribe(ORB_ID(vehicle_status));
 	vehicle_status_s vstatus;
+	int calib_status_sub = orb_subscribe(ORB_ID(calibrator));
+	calibrator_s calib_status;
+	bool calibration_detected = false;
 	int attitude_sub = orb_subscribe(ORB_ID(vehicle_attitude));
 	vehicle_attitude_s vattitude;
 	orb_set_interval(attitude_sub, sampling_interval_ms);
@@ -86,21 +90,11 @@ int thread_main(int argc, char* argv[]) {
 
 	if (is_recheck_required()) {
 		DOG_PRINT("Sensor validation required.\n");
-		sens_status.combined_status = SENSOR_STATUS_CHECK_NEEDED;
-		sens_status.accel_status = SENSOR_STATUS_CHECK_NEEDED;
-		sens_status.attitude_status = SENSOR_STATUS_CHECK_NEEDED;
-		sens_status.baro_status = SENSOR_STATUS_CHECK_NEEDED;
-		sens_status.gyro_status = SENSOR_STATUS_CHECK_NEEDED;
-		sens_status.mag_status = SENSOR_STATUS_CHECK_NEEDED;
+		set_all_sensor_statuses(&sens_status, SENSOR_STATUS_CHECK_NEEDED);
 	}
 	else {
 		DOG_PRINT("Sensor validation is not necessary.\n");
-		sens_status.combined_status = SENSOR_STATUS_OK;
-		sens_status.accel_status = SENSOR_STATUS_OK;
-		sens_status.attitude_status = SENSOR_STATUS_OK;
-		sens_status.baro_status = SENSOR_STATUS_OK;
-		sens_status.gyro_status = SENSOR_STATUS_OK;
-		sens_status.mag_status = SENSOR_STATUS_OK;
+		set_all_sensor_statuses(&sens_status, SENSOR_STATUS_OK);
 	}
 	// Publish sensor_status only if we weren't stopped in the middle of the check
 	if (g_thread_should_run) {
@@ -108,6 +102,18 @@ int thread_main(int argc, char* argv[]) {
 	}
 
 	while (g_thread_should_run) {
+
+		if (orb_copy(ORB_ID(calibrator), calib_status_sub, &calib_status) == 0) {
+			if (calib_status.status != CALIBRATOR_NONE && calib_status.status != CALIBRATOR_FINISH && !calibration_detected) {
+				calibration_detected = true;
+				DOG_PRINT("Sensor validation required due to calibration.\n");
+				set_all_sensor_statuses(&sens_status, SENSOR_STATUS_CHECK_NEEDED);
+				orb_publish(ORB_ID(sensor_status), sens_status_pub, &sens_status);
+			}
+			else {
+				calibration_detected = false;
+			}
+		}
 
 		orb_copy(ORB_ID(vehicle_status), vstatus_sub, &vstatus);
 		if (vstatus.arming_state == ARMING_STATE_ARMED || vstatus.arming_state == ARMING_STATE_ARMED_ERROR) {
@@ -192,6 +198,7 @@ int thread_main(int argc, char* argv[]) {
 
 	}
 	orb_unsubscribe(vstatus_sub);
+	orb_unsubscribe(calib_status_sub);
 	orb_unsubscribe(attitude_sub);
 	orb_unsubscribe(sens_status_pub);
 
@@ -396,12 +403,7 @@ extern "C" __EXPORT int sensor_validation_main(int argc, char* argv[]) {
 		param_get(param_find("SVAL_ENABLE"), &enabled);
 		if (enabled == 0) {
 			sensor_status_s sens_status;
-			sens_status.combined_status = SENSOR_STATUS_OK;
-			sens_status.accel_status = SENSOR_STATUS_OK;
-			sens_status.attitude_status = SENSOR_STATUS_OK;
-			sens_status.baro_status = SENSOR_STATUS_OK;
-			sens_status.gyro_status = SENSOR_STATUS_OK;
-			sens_status.mag_status = SENSOR_STATUS_OK;
+			set_all_sensor_statuses(&sens_status, SENSOR_STATUS_OK);
 			int sens_status_pub = orb_advertise(ORB_ID(sensor_status), &sens_status);
 			close(sens_status_pub);
 			return 0;

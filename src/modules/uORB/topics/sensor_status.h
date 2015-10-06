@@ -21,5 +21,13 @@ struct sensor_status_s {
 	SENSOR_STATUS gyro_status;
 	SENSOR_STATUS mag_status;
 };
+inline void set_all_sensor_statuses(struct sensor_status_s *sensor_status, const SENSOR_STATUS to_set) {
+	sensor_status->combined_status = to_set;
+	sensor_status->accel_status = to_set;
+	sensor_status->attitude_status = to_set;
+	sensor_status->baro_status = to_set;
+	sensor_status->gyro_status = to_set;
+	sensor_status->mag_status = to_set;
+}
 
 ORB_DECLARE(sensor_status);
