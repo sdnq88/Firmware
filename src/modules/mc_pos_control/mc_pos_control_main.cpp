@@ -2053,34 +2053,6 @@ MulticopterPositionControl::task_main()
 				point_to_target();
 			}
 
-			// TODO! [AK] Consider applying distance sensor correction in other cases (ie ATTITUDE_HOLD)
-			if ((_control_mode.flag_control_position_enabled || _control_mode.flag_control_follow_target)&&
-                    (_vstatus.airdog_state == AIRD_STATE_IN_AIR)    ) {
-				/*
-                 * Try to correct this altitude with sonar
-                 * Only if we are flying or landing
-                 */
-                    ground_dist_correction();
-                    if (_ground_setpoint_corrected) {
-                        //correct altitude velocity
-
-                        _vel_ff_sp_v(2) = 0.0f;
-                        _vel_ff_sp_mv_r(2) = 0.0f;
-                        _vel_ff_t(2) = 0.0f;
-
-                        //and altitude move rate
-                        _sp_move_rate(2)= 0.0f;
-
-                        if (_control_mode.flag_control_follow_target && _control_mode.flag_control_manual_enabled) {
-                        	//stop moving offset in manual follow mode
-                        	_follow_offset(2) = _pos_sp(2) - _tpos(2);
-                        }
-                    }
-			}
-            else {
-                _ground_setpoint_corrected = false;
-            }
-
 			/* reset follow offset after non-follow modes */
 			if (!(_control_mode.flag_control_follow_target)) {
 				_reset_follow_offset = true;
@@ -2218,6 +2190,34 @@ MulticopterPositionControl::task_main()
                     _pos_sp(1) = _pos(1);
                     _pos_sp(2) = _pos(2);
                     _vel_sp.zero();
+                }
+
+                // TODO! [AK] Consider applying distance sensor correction in other cases (ie ATTITUDE_HOLD)
+                if ((_control_mode.flag_control_position_enabled || _control_mode.flag_control_follow_target)&&
+                        (_vstatus.airdog_state == AIRD_STATE_IN_AIR)    ) {
+                    /*
+                     * Try to correct this altitude with sonar
+                     * Only if we are flying or landing
+                     */
+                        ground_dist_correction();
+                        if (_ground_setpoint_corrected) {
+                            //correct altitude velocity
+
+                            _vel_ff_sp_v(2) = 0.0f;
+                            _vel_ff_sp_mv_r(2) = 0.0f;
+                            _vel_ff_t(2) = 0.0f;
+
+                            //and altitude move rate
+                            _sp_move_rate(2)= 0.0f;
+
+                            if (_control_mode.flag_control_follow_target && _control_mode.flag_control_manual_enabled) {
+                                //stop moving offset in manual follow mode
+                                _follow_offset(2) = _pos_sp(2) - _tpos(2);
+                            }
+                        }
+                }
+                else {
+                    _ground_setpoint_corrected = false;
                 }
 
 				if (!_control_mode.flag_control_altitude_enabled) {
