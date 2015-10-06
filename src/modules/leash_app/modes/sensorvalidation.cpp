@@ -207,14 +207,9 @@ Base* SensorValidation::doEvent(int orbId)
                 {
                     if (buttonOkAvailable && key_pressed(BTN_OK))
                     {
-                        DisplayHelper::showInfo(INFO_SENSOR_VALIDATION_OK_TO_START, 0);
                         next = new SensorValidation();
                     }
 
-                    if (key_pressed(BTN_MODE))
-                    {
-                        next = new Menu();
-                    }
                 }
 
                 if (next == nullptr)
@@ -227,6 +222,11 @@ Base* SensorValidation::doEvent(int orbId)
 
         default:
             break;
+    }
+
+    if (orbId == FD_KbdHandler && key_pressed(BTN_MODE))
+    {
+        next = new Menu();
     }
 
     return next;
