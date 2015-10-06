@@ -692,12 +692,10 @@ void Screen::showInfo(int info, int error, int leashBattery)
             break;
 
         case INFO_CALIBRATING_AIRDOG:
-            text[0].text = "Calibrate";
-            text[0].font = &Font::LucideGrandeMed;
+            text[0].text = "Calibrating";
+            text[0].font = &Font::LucideGrandeSmall;
             text[1].text = "AirDog";
             text[1].font = &Font::LucideGrandeSmall;
-            text[2].text = "Press OK";
-            text[2].font = &Font::LucideGrandeSmall;
             break;
 
         case INFO_PAIRING:

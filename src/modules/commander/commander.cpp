@@ -3417,10 +3417,12 @@ void *commander_low_prio_loop(void *arg)
 
 		/* ignore commands the high-prio loop handles */
 		if (cmd.command == VEHICLE_CMD_DO_SET_MODE ||
-		    cmd.command == VEHICLE_CMD_COMPONENT_ARM_DISARM ||
-		    cmd.command == VEHICLE_CMD_NAV_TAKEOFF ||
-		    cmd.command == VEHICLE_CMD_NAV_REMOTE_CMD ||
-		    cmd.command == VEHICLE_CMD_DO_SET_SERVO) {
+			cmd.command == VEHICLE_CMD_COMPONENT_ARM_DISARM ||
+			cmd.command == VEHICLE_CMD_NAV_TAKEOFF ||
+			cmd.command == VEHICLE_CMD_NAV_REMOTE_CMD ||
+			cmd.command == VEHICLE_CMD_DO_SET_SERVO ||
+			cmd.target_system != status.system_id ||
+			cmd.target_component != status.component_id) {
 			continue;
 		}
 
@@ -3466,9 +3468,9 @@ void *commander_low_prio_loop(void *arg)
 					answer_command(cmd, VEHICLE_CMD_RESULT_ACCEPTED);
 					param_get(param_find("A_CALIB_MODE"), &modified_calibration);
 					if (modified_calibration) {
-                                            calibration::calibrate_in_new_task(calibration::CALIBRATE_GYROSCOPE,
-                                                                                mavlink_fd);
-                                            calib_ret = OK;
+						calibration::calibrate_in_new_task(calibration::CALIBRATE_GYROSCOPE,
+														   mavlink_fd);
+						calib_ret = OK;
 					}
 					else {
 						calib_ret = do_gyro_calibration(mavlink_fd);
@@ -3479,11 +3481,10 @@ void *commander_low_prio_loop(void *arg)
 					answer_command(cmd, VEHICLE_CMD_RESULT_ACCEPTED);
 					param_get(param_find("A_CALIB_MODE"), &modified_calibration);
 					if (modified_calibration) {
-                                            calibration::calibrate_in_new_task(calibration::CALIBRATE_MAGNETOMETER,
-                                                                                mavlink_fd);
-                                            calib_ret = OK;
-                                        }
-					else {
+						calibration::calibrate_in_new_task(calibration::CALIBRATE_MAGNETOMETER,
+														   mavlink_fd);
+						calib_ret = OK;
+					} else {
 						calib_ret = do_mag_calibration(mavlink_fd);
 					}
 
@@ -3509,9 +3510,9 @@ void *commander_low_prio_loop(void *arg)
 					answer_command(cmd, VEHICLE_CMD_RESULT_ACCEPTED);
 					param_get(param_find("A_CALIB_MODE"), &modified_calibration);
 					if (modified_calibration) {
-                                                calibration::calibrate_in_new_task(calibration::CALIBRATE_ACCELEROMETER,
-                                                                                    mavlink_fd);
-                                                calib_ret = OK;
+						calibration::calibrate_in_new_task(calibration::CALIBRATE_ACCELEROMETER,
+														   mavlink_fd);
+						calib_ret = OK;
 					}
 					else {
 						calib_ret = do_accel_calibration(mavlink_fd);
@@ -3535,15 +3536,16 @@ void *commander_low_prio_loop(void *arg)
 					/* this always succeeds */
 					calib_ret = OK;
 
-                                } else if ((int)(cmd.param7) == 0) {
-                                    // stop calibration
-                                    calibration::calibrate_stop();
-                                }
+				} else if ((int)(cmd.param7) == 0) {
+					// stop calibration
+					calibration::calibrate_stop();
+				}
 
 				if (calib_ret == OK) {
 					tune_positive(true);
 
 				} else {
+					commander_set_error(CMD_PREFLIGHT_CALIBRATION_ERROR);
 					tune_negative(true);
 				}
 

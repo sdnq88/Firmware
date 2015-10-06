@@ -115,6 +115,11 @@ const char *getErrorMessageText(int errorCode, const char **pTitle)
             title = "BATTERY";
             result = "Emergency landing";
             break;
+
+        case CMD_PREFLIGHT_CALIBRATION_ERROR:
+            title = "Calibration";
+            result = "Rejected by\nAirDog";
+            break;
     }
 
     if (pTitle != nullptr)

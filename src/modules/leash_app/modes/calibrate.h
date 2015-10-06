@@ -1,6 +1,7 @@
 #pragma once
 
 #include "base.h"
+#include "error.h"
 
 namespace modes
 {
@@ -15,7 +16,7 @@ enum class CalibrationDevice
     AIRDOG_MAGNETOMETER,
 };
 
-class Calibrate : public Base
+class Calibrate : public Error
 {
 public:
     Calibrate(CalibrationDevice device, int returnEntry, int returnParam);
