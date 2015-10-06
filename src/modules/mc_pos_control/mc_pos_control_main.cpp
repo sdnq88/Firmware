@@ -194,6 +194,7 @@ private:
         param_t land_correction_on;
 		param_t takeoff_speed;
 		param_t tilt_max_land;
+        param_t max_land_xy_speed;
 		param_t follow_vel_ff_z;
 		param_t follow_vel_ff_xy;
 		param_t follow_talt_offs;
@@ -243,6 +244,7 @@ private:
         float regular_land_speed;
 		float takeoff_speed;
 		float tilt_max_land;
+        float max_land_xy_speed;
 		float follow_vel_ff_z;
 		float follow_vel_ff_xy;
 		float follow_talt_offs;
@@ -632,6 +634,7 @@ MulticopterPositionControl::MulticopterPositionControl() :
     _params_handles.safe_land_h     = param_find("LAND_SAFE_H");
     _params_handles.regular_land_speed = param_find("LAND_REG_V");
     _params_handles.land_correction_on = param_find("LAND_CORR_ON");
+    _params_handles.max_land_xy_speed = param_find("LAND_MAX_XY_V");
 	_params_handles.takeoff_speed	= param_find("MPC_TAKEOFF_SPD");
 
     _params_handles.yaw_dead_zone_r = param_find("A_YAW_DEAD_Z_R");
@@ -730,6 +733,7 @@ MulticopterPositionControl::parameters_update(bool force)
 		param_get(_params_handles.takeoff_speed, &_params.takeoff_speed);
 		param_get(_params_handles.tilt_max_land, &_params.tilt_max_land);
 		_params.tilt_max_land = math::radians(_params.tilt_max_land);
+        param_get(_params_handles.max_land_xy_speed, &_params.max_land_xy_speed);
 		param_get(_params_handles.follow_vel_ff_xy, &_params.follow_vel_ff_xy);
 		param_get(_params_handles.follow_vel_ff_z, &_params.follow_vel_ff_z);
 
@@ -1227,6 +1231,7 @@ MulticopterPositionControl::control_auto_vel(float dt) {
 				&_pos_sp.data[0], &_pos_sp.data[1]);
 
         _pos_sp(2) = -(_pos_sp_triplet.current.alt - _ref_alt);
+
         math::Vector<3> pos_delta = _pos_sp - _pos;
 
 		if (_pos_sp_triplet.current.abs_velocity_valid && _pos_sp != _pos) {
@@ -2243,16 +2248,28 @@ MulticopterPositionControl::task_main()
 						&& _control_mode.flag_control_position_enabled
 						&& _pos_sp_triplet.current.valid
 						&& _pos_sp_triplet.current.type == SETPOINT_TYPE_LAND) {
-                    /* In case we have sonar correction - use it */
-                    if(_params.land_correction_on) {
-                        float speed_corretion =  landing_speed_correction();
-                        _vel_sp(2) = _params.land_speed_min * speed_corretion;
+
+                    math::Vector<2> xy_speed(_vel(0),_vel(1));
+
+                    if (xy_speed.length() > _params.max_land_xy_speed) {
+
+                        _vel_sp(2) = 0.0f;
+
+                    } else  {
+
+                        /* In case we have sonar correction - use it */
+                        if(_params.land_correction_on) {
+                            float speed_corretion =  landing_speed_correction();
+                            _vel_sp(2) = _params.land_speed_min * speed_corretion;
+                        }
+                        else {
+                            /* No range finder correction applied */
+                            _vel_sp(2) = _params.regular_land_speed;
+                        }
+                        _pos_sp(2) = _pos(2);
+
                     }
-                    else {
-                        /* No range finder correction applied */
-                        _vel_sp(2) = _params.regular_land_speed;
-                    }
-                    _pos_sp(2) = _pos(2);
+
 				}
 
 				/* use constant ascend rate during take off */

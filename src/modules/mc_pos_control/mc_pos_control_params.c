@@ -256,6 +256,17 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 45.0f);
 PARAM_DEFINE_FLOAT(LAND_REG_V, 0.9f);
 
 /**
+ * Max xy speed during landing
+ *
+ * @unit m/s
+ * @min 0.0
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(LAND_MAX_XY_V, 2.0f);
+
+
+
+/**
  * Takeoff ascend rate
  *
  * @unit m/s
@@ -414,3 +425,5 @@ PARAM_DEFINE_FLOAT(FOL_FF_GRAD_STRT, 20.0f);
  * Above this interval FF will be 0.0 (0% of full feed foward)
  */
 PARAM_DEFINE_FLOAT(FOL_FF_GRAD_END, 150.0f);
+
+
