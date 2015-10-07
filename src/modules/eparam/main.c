@@ -12,7 +12,7 @@
 __EXPORT int eparam_main(int argc, char *argv[]);
 
 static FILE *gFile = NULL;
-static const char* factoryFileName = "/fs/microsd/factory.params";
+static const char* factoryFileName = "/fs/microsd/fact.par";
 
 static void do_save(void *arg, param_t param)
 {
