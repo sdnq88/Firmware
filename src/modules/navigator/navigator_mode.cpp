@@ -157,6 +157,8 @@ NavigatorMode::updateParamHandles() {
     NavigatorMode::parameter_handles.offset_max_distance = param_find("OFF_DST_MAX");
 
     NavigatorMode::parameter_handles.max_offset_rot_speed = param_find("OFF_MAX_ROT_SPD");
+    NavigatorMode::parameter_handles.min_offset_rot_period = param_find("OFF_MIN_ROT_P");
+
     NavigatorMode::parameter_handles.offset_angle_error_treshold = param_find("OFF_ANGL_ERR_T");
 
     NavigatorMode::parameter_handles.offset_rot_speed_ch_cmd_step = param_find("OFF_ROT_SPD_STP");
@@ -237,6 +239,8 @@ NavigatorMode::updateParamValues() {
     param_get(NavigatorMode::parameter_handles.offset_max_distance,&(NavigatorMode::parameters.offset_max_distance));
 
     param_get(NavigatorMode::parameter_handles.max_offset_rot_speed,&(NavigatorMode::parameters.max_offset_rot_speed));
+    param_get(NavigatorMode::parameter_handles.min_offset_rot_period,&(NavigatorMode::parameters.min_offset_rot_period));
+
     param_get(NavigatorMode::parameter_handles.offset_angle_error_treshold,&(NavigatorMode::parameters.offset_angle_error_treshold));
 
     param_get(NavigatorMode::parameter_handles.offset_rot_speed_ch_cmd_step,&(NavigatorMode::parameters.offset_rot_speed_ch_cmd_step));

@@ -113,6 +113,8 @@ struct PARAMETERS {
     float offset_max_distance;
 
     float max_offset_rot_speed;
+    float min_offset_rot_period;
+
     float offset_angle_error_treshold;
 
     float offset_rot_speed_ch_cmd_step;
@@ -196,6 +198,8 @@ struct PARAM_HANDLES {
     param_t offset_max_distance;
 
     param_t max_offset_rot_speed;
+    param_t min_offset_rot_period;
+
     param_t offset_angle_error_treshold;
 
     param_t offset_rot_speed_ch_cmd_step;

@@ -338,6 +338,8 @@ OffsetFollow::offset_distance_step(int direction) {
 
     _base_offset(0) += direction * step_len;
 
+    _radius = sqrt(_base_offset(0) * _base_offset(0) + _base_offset(1) * _base_offset(1));
+
 }
 
 void
@@ -410,8 +412,16 @@ OffsetFollow::update_offset_sp_angle() {
         
     if (_rotation_speed_ms <= -NavigatorMode::parameters.max_offset_rot_speed)
         _rotation_speed_ms = -NavigatorMode::parameters.max_offset_rot_speed;
+    
+    float max_angular_rot_speed = _2pi / NavigatorMode::parameters.min_offset_rot_period;
 
     _rotation_speed = _rotation_speed_ms / _radius;
+
+    if (_rotation_speed < -max_angular_rot_speed)
+        _rotation_speed = -max_angular_rot_speed;
+
+    if (_rotation_speed > max_angular_rot_speed)
+        _rotation_speed = max_angular_rot_speed;
 
     _t_prev = _t_cur;
     _t_cur = hrt_absolute_time();
