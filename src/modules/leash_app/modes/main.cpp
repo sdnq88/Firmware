@@ -462,7 +462,7 @@ Base* Main::processFlight(int orbId)
     else if (orbId == FD_KbdHandler)
     {
         DOG_PRINT("we are here!!!!!!!!!\n");
-        if ( key_LongPressed(BTN_MODE))
+        if ( key_ShortPressed(BTN_MODE))
         {
             if (baseCondition.main == IN_FLINGHT)
             {
