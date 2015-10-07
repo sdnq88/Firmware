@@ -11,17 +11,19 @@ extern "C" __EXPORT int main(int argc, const char * const * const argv);
 #include "modes/base.h"
 #include "modes/logo.h"
 #include "modes/connect.h"
+#include "modes/factorytest.h"
 #include "button_handler.h"
 
 static bool main_thread_should_exit = false;
 static bool thread_running = false;
 static int deamon_task;
+static modes::Base *startMode = nullptr;
 
 static int app_main_thread(int argc, char *argv[]) {
     (void)argc;
     (void)argv;
     DataManager *dm = DataManager::instance();
-    modes::Base *currentMode = new modes::Logo();
+    modes::Base *currentMode = startMode != nullptr ? startMode : new modes::Logo();
 
     thread_running = true;
 
@@ -74,6 +76,15 @@ int main(int argc, const char * const * const argv)
     {
         if (!thread_running)
         {
+            if (argc > 2 && strcmp("test", argv[2]) == 0)
+            {
+                startMode = new modes::FactoryTest();
+            }
+            else
+            {
+                startMode = nullptr;
+            }
+
             main_thread_should_exit = false;
             deamon_task = task_spawn_cmd("leash_app",
                                          SCHED_DEFAULT,

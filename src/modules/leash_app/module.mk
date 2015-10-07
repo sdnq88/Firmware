@@ -6,6 +6,7 @@ SRCS			= \
     modes/calibrate.cpp \
     modes/connect.cpp \
     modes/error.cpp \
+    modes/factorytest.cpp \
     modes/list.cpp \
     modes/logo.cpp \
     modes/main.cpp \
