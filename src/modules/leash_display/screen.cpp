@@ -707,6 +707,17 @@ void Screen::showInfo(int info, int error, int leashBattery)
             text[2].font = &Font::LucideGrandeTiny;
             break;
 
+        case INFO_PAIRING_OK:
+            text[0].text = "Pairing done";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "Now it is safe to";
+            text[1].font = &Font::LucideGrandeTiny;
+            text[2].text = "turn off pairing";
+            text[2].font = &Font::LucideGrandeTiny;
+            text[3].text = "on AirDog";
+            text[3].font = &Font::LucideGrandeTiny;
+            break;
+
         case INFO_NOT_PAIRED:
             text[0].text = "Not paired";
             text[0].font = &Font::LucideGrandeMed;

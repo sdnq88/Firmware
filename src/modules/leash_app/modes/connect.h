@@ -30,6 +30,7 @@ private:
 
     bool forcing_pairing;
 
+    bool wasPairing;
     State currentState;
 
     time_t startTime;

@@ -204,16 +204,19 @@ void ModeConnect::setState(State state)
     switch (currentState)
     {
         case State::NOT_PAIRED:
+            wasPairing = false;
             DisplayHelper::showInfo(INFO_NOT_PAIRED);
             break;
 
         case State::PAIRING:
+            wasPairing = true;
             forcing_pairing = true;
             BluetoothHelper::pairing();
             DisplayHelper::showInfo(INFO_PAIRING);
             break;
 
         case State::DISCONNECTED:
+            wasPairing = false;
             DisplayHelper::showInfo(INFO_CONNECTION_LOST);
             break;
 
@@ -223,7 +226,15 @@ void ModeConnect::setState(State state)
 
         case State::CHECK_MAVLINK:
             time(&startTime);
-            DisplayHelper::showInfo(INFO_ESTABLISHING_CONNECTION);
+            if (wasPairing)
+            {
+                DisplayHelper::showInfo(INFO_PAIRING_OK);
+            }
+            else
+            {
+                DisplayHelper::showInfo(INFO_ESTABLISHING_CONNECTION);
+            }
+            wasPairing = false;
             break;
 
         case State::GETTING_ACTIVITIES:
@@ -232,6 +243,7 @@ void ModeConnect::setState(State state)
             break;
 
         default:
+            wasPairing = false;
             DisplayHelper::showInfo(INFO_FAILED);
             break;
     }
