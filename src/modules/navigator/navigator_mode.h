@@ -128,6 +128,8 @@ struct PARAMETERS {
 
     float son_min;
 
+    float off_min_speed_to_rotate;
+
 };
 
 
@@ -208,6 +210,8 @@ struct PARAM_HANDLES {
     param_t follow_talt_offs;
 
     param_t son_min;
+
+    param_t off_min_speed_to_rotate;
 };
 
 class Navigator;

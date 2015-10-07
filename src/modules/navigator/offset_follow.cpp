@@ -133,7 +133,7 @@ OffsetFollow::on_active_front_follow() {
         _rotation_speed_ms = 0.0f;
     }
 
-    if (_target_speed < 1.0f)
+    if (_target_speed < NavigatorMode::parameters.off_min_speed_to_rotate) 
         _rotation_speed_ms = 0.0f;
 
 }

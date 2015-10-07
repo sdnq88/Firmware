@@ -59,3 +59,8 @@ PARAM_DEFINE_FLOAT(OFF_MAX_SP_ANG_D, 2.0f);
  * @unit m
  */
 PARAM_DEFINE_FLOAT(OFF_INTL_DST, 8.0f);
+
+/*
+ * Minimum target speed to rotate offset automatically
+ */
+PARAM_DEFINE_FLOAT(OFF_MIN_SPD_ROT, 1.0f);

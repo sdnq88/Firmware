@@ -171,6 +171,8 @@ NavigatorMode::updateParamHandles() {
     NavigatorMode::parameter_handles.follow_talt_offs = param_find("FOL_TALT_OFF");
 
     NavigatorMode::parameter_handles.son_min= param_find("SENS_SON_MIN");
+    
+    NavigatorMode::parameter_handles.off_min_speed_to_rotate = param_find("OFF_MIN_SPD_ROT");
 
 
 }
@@ -249,6 +251,8 @@ NavigatorMode::updateParamValues() {
     param_get(NavigatorMode::parameter_handles.follow_talt_offs, &(NavigatorMode::parameters.follow_talt_offs));
 
     param_get(NavigatorMode::parameter_handles.son_min, &(NavigatorMode::parameters.son_min));
+
+    param_get(NavigatorMode::parameter_handles.off_min_speed_to_rotate, &(NavigatorMode::parameters.off_min_speed_to_rotate));
 }
 
 
