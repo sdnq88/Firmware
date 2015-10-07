@@ -170,6 +170,9 @@ static int daemon_task;				/**< Handle of daemon task / thread */
 static unsigned int leds_counter;
 /* To remember when last notification was sent */
 static uint64_t last_print_mode_reject_time = 0;
+/* Overall flying time and flights count of this drone */
+static uint64_t overall_flying_time = 0;
+static uint64_t overall_flights_count = 0;
 /* if connected via USB */
 static bool on_usb_power = false;
 
@@ -432,6 +435,7 @@ static orb_advert_t status_pub;
 
 transition_result_t arm_disarm(bool arm, const int mavlink_fd_local, const char *armedBy)
 {
+    static uint64_t arm_time = 0;
 	transition_result_t arming_res = TRANSITION_NOT_CHANGED;
 
 	// Transition the armed state. By passing mavlink_fd to arming_state_transition it will
@@ -440,6 +444,24 @@ transition_result_t arm_disarm(bool arm, const int mavlink_fd_local, const char 
 
 	if (arming_res == TRANSITION_CHANGED && mavlink_fd_local) {
 		mavlink_log_info(mavlink_fd_local, "[cmd] %s by %s", arm ? "ARMED" : "DISARMED", armedBy);
+        if (arm) {
+            arm_time = hrt_absolute_time();
+        }
+        else {
+            if (arm_time != 0) {
+                overall_flying_time += (hrt_absolute_time() - arm_time)*1e-6;
+                overall_flights_count++;
+                if (param_set(param_find("A_ABS_FLY_TIME"), &overall_flying_time))
+                {
+                    fprintf(stderr, "ERROR! A_ABS_FLY_TIME not set!\n");
+                }
+                if (param_set(param_find("A_ABS_FLY_COUNT"), &overall_flights_count))
+                {
+                    fprintf(stderr, "ERROR! A_ABS_FLY_COUNT not set!\n");
+                }
+                param_save_default();
+            }
+        }
 
 	} else if (arming_res == TRANSITION_DENIED) {
 		tune_negative(true);
@@ -735,9 +757,9 @@ bool handle_command(struct vehicle_status_s *status_local
 
             if (cmd->param1 == REMOTE_CMD_SWITCH_ACTIVITY) {
 
-                if (activity_manager != nullptr) 
+                if (activity_manager != nullptr)
                     activity_manager->set_activity((int32_t)cmd->param2);
-            
+
             }
             else if (cmd->param1 == REMOTE_CMD_PARAM_RESET) {
                 // command supported only by airdog
@@ -927,6 +949,8 @@ int commander_thread_main(int argc, char *argv[])
 	param_t _param_eph_threshold = param_find("A_GPS_LOSS_EPH");
 	param_t _param_epv_threshold = param_find("A_GPS_LOSS_EPV");
 	param_t _param_gps_failsafe = param_find("A_GPS_FAILSAFE");
+    param_t _param_overall_fly_time = param_find("A_ABS_FLY_TIME");
+    param_t _param_overall_flights_count = param_find("A_ABS_FLY_COUNT");
 
 	float eph_threshold = 5.0f;
 	float epv_threshold = 10.0f;
@@ -944,6 +968,9 @@ int commander_thread_main(int argc, char *argv[])
 	param_get(_param_battery_fake_level, &battery_fake_level);
 
 	param_get(_param_require_gps, &require_gps);
+
+    param_get(_param_overall_fly_time, &overall_flying_time);
+    param_get(_param_overall_flights_count, &overall_flights_count);
 
     float target_visibility_timeout_2;
     int32_t target_datalink_timeout;
@@ -1291,7 +1318,7 @@ int commander_thread_main(int argc, char *argv[])
 	g_flight_time_check.Boot_init();
 	g_safety_action_helper.Boot_init();
 	g_battery_safety_check.Boot_init();
-	
+
 	/* now initialized */
 	commander_initialized = true;
 	thread_running = true;
@@ -1324,7 +1351,7 @@ int commander_thread_main(int argc, char *argv[])
 	bool use_gps_failsafe = false;
 
 	while (!thread_should_exit) {
- 
+
 
 		if (mavlink_fd < 0 && counter % (1000000 / MAVLINK_OPEN_INTERVAL) == 0) {
 			/* try to open the mavlink log device every once in a while */
@@ -1347,7 +1374,7 @@ int commander_thread_main(int argc, char *argv[])
                 status.condition_path_points_valid = true;
             }
         }
-        
+
 
 
 
@@ -1366,7 +1393,7 @@ int commander_thread_main(int argc, char *argv[])
 
 				if (param_get(_param_sys_type, &(status.system_type)) != OK) {
 					warnx("failed getting new system type");
-				} 
+				}
 
 				/* disable manual override for all systems that rely on electronic stabilization */
 				if (status.system_type == VEHICLE_TYPE_COAXIAL ||
@@ -1383,7 +1410,7 @@ int commander_thread_main(int argc, char *argv[])
 
 				/* check and update system / component ID */
 				param_get(_param_system_id, &(status.system_id));
-                
+
 				param_get(_param_component_id, &(status.component_id));
 
 
@@ -2221,7 +2248,7 @@ int commander_thread_main(int argc, char *argv[])
                         g_flight_time_check.On_in_air_takeoff();
                     }
                 }
-                
+
                 airdog_state_transition(&status, commander_request.airdog_state, mavlink_fd);
                 //TODO: [INE]
                 //if airdog_state_transition != DENIED
@@ -2319,7 +2346,7 @@ int commander_thread_main(int argc, char *argv[])
 				|| control_mode.flag_control_follow_target
 				|| control_mode.flag_control_manual_enabled ) ) {
 			commander_error_code check_error_code = COMMANDER_ERROR_OK;
-			
+
 			if ( check_error_code == COMMANDER_ERROR_OK ) {
 				if ( status.airdog_state == AIRD_STATE_TAKING_OFF ) {
 					check_error_code = g_flight_time_check.Takeoff_check();
@@ -2328,7 +2355,7 @@ int commander_thread_main(int argc, char *argv[])
 				} else if ( status.airdog_state == AIRD_STATE_LANDING ) {
 					check_error_code = g_flight_time_check.Landing_check();
 				}
-				
+
 				if ( check_error_code != COMMANDER_ERROR_OK ) {
 					if ( check_error_code != FTC_ERROR ) {
 						commander_set_error(check_error_code);
@@ -2344,13 +2371,13 @@ int commander_thread_main(int argc, char *argv[])
 					}
 				}
 			}
-			
+
 			if ( check_error_code == COMMANDER_ERROR_OK ) {
 				if ( status.airdog_state == AIRD_STATE_IN_AIR ) {
 					check_error_code = g_battery_safety_check.Flight_check(status, home, global_position
 						, control_mode.flag_control_manual_enabled);
 				}
-				
+
 				if ( check_error_code != COMMANDER_ERROR_OK ) {
 					if ( check_error_code != BSC_ERROR ) {
 						commander_set_error(check_error_code);
@@ -2630,12 +2657,12 @@ int commander_thread_main(int argc, char *argv[])
                 if (activity_manager->write_params_on() != activity_on)
                     activity_manager->set_write_params_on(activity_on);
 
-                if (activity_manager->is_inited()) 
+                if (activity_manager->is_inited())
                     activity_manager->check_received_params();
                 else
                     activity_manager->init();
 
-            } 
+            }
         }
 
 		usleep(COMMANDER_MONITORING_INTERVAL);
@@ -2666,13 +2693,13 @@ int commander_thread_main(int argc, char *argv[])
 	close(param_changed_sub);
 	close(battery_sub);
 	close(mission_pub);
-	
+
 	g_safety_action_helper.Shutdown();
 	g_battery_safety_check.Shutdown();
 	g_flight_time_check.Shutdown();
 
 	thread_running = false;
-	
+
     if ( activity_manager != nullptr ) {
         delete activity_manager;
         activity_manager = nullptr;
@@ -2977,7 +3004,7 @@ set_control_mode()
 	if (!_custom_flag_control_point_to_target) {
 		control_mode.flag_control_point_to_target = false;
 	}
-	
+
 	if ( status.airdog_state == AIRD_STATE_PREFLIGHT_MOTOR_CHECK ) {
 		control_mode.flag_control_manual_enabled = false;
 		control_mode.flag_control_auto_enabled = false;
@@ -2991,7 +3018,7 @@ set_control_mode()
 		control_mode.flag_control_point_to_target = false;
 		return;
 	}
-	
+
 	switch (status.nav_state) {
 	case NAVIGATION_STATE_MANUAL:
 		control_mode.flag_control_manual_enabled = true;

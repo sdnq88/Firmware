@@ -254,6 +254,8 @@ int eparam_factoryReset(void)
     int SYS_ACT = 0;
     int A_DEVICE_ID = 0;
     int MAV_SYS_ID = 0;
+    int OVERALL_FLY_TIME = 0;
+    int OVERALL_FLIGHT_COUNT = 0;
 
     if (param_get(param_find("SYS_ACT"), &SYS_ACT))
     {
@@ -268,6 +270,16 @@ int eparam_factoryReset(void)
     if (param_get(param_find("MAV_SYS_ID"), &MAV_SYS_ID))
     {
         printf("failed to get MAV_SYS_ID value");
+    }
+
+    if (param_get(param_find("A_ABS_FLY_TIME"), &OVERALL_FLY_TIME))
+    {
+        printf("failed to get A_ABS_FLY_TIME value");
+    }
+
+    if (param_get(param_find("A_ABS_FLY_COUNT"), &OVERALL_FLIGHT_COUNT))
+    {
+        printf("failed to get A_ABS_FLY_COUNT value");
     }
 
     activity_factory_reset();
@@ -289,6 +301,16 @@ int eparam_factoryReset(void)
     if (param_set(param_find("MAV_SYS_ID"), &MAV_SYS_ID))
     {
         printf("failed to set MAV_SYS_ID value");
+    }
+
+    if (param_set(param_find("A_ABS_FLY_TIME"), &OVERALL_FLY_TIME))
+    {
+        printf("failed to set A_ABS_FLY_TIME value");
+    }
+
+    if (param_set(param_find("A_ABS_FLY_COUNT"), &OVERALL_FLIGHT_COUNT))
+    {
+        printf("failed to set A_ABS_FLY_COUNT value");
     }
 
     param_save_default();
