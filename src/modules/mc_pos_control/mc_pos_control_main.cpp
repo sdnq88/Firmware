@@ -177,7 +177,8 @@ private:
 		param_t z_vel_p;
 		param_t z_vel_i;
 		param_t z_vel_d;
-		param_t z_vel_max;
+		param_t z_vel_max_up;
+		param_t z_vel_max_down;
 		param_t z_ff;
 		param_t xy_p;
 		param_t xy_vel_p;
@@ -284,7 +285,8 @@ private:
 		math::Vector<3> sp_offs_max;
 
         float xy_vel_max;
-        float z_vel_max;
+        float z_vel_max_up;
+        float z_vel_max_down;
 
 		float pitch_lpf_cut;
 
@@ -619,7 +621,10 @@ MulticopterPositionControl::MulticopterPositionControl() :
 	_params_handles.z_vel_p		= param_find("MPC_Z_VEL_P");
 	_params_handles.z_vel_i		= param_find("MPC_Z_VEL_I");
 	_params_handles.z_vel_d		= param_find("MPC_Z_VEL_D");
-	_params_handles.z_vel_max	= param_find("MPC_Z_VEL_MAX");
+
+	_params_handles.z_vel_max_up	= param_find("MPC_Z_VEL_MAX_U");
+	_params_handles.z_vel_max_down	= param_find("MPC_Z_VEL_MAX_D");
+
 	_params_handles.z_ff		= param_find("MPC_Z_FF");
 	_params_handles.xy_p		= param_find("MPC_XY_P");
 	_params_handles.xy_vel_p	= param_find("MPC_XY_VEL_P");
@@ -797,9 +802,11 @@ MulticopterPositionControl::parameters_update(bool force)
 		_params.vel_max(0) = v;
 		_params.vel_max(1) = v;
         _params.xy_vel_max = v;
-		param_get(_params_handles.z_vel_max, &v);
+		param_get(_params_handles.z_vel_max_up, &v);
 		_params.vel_max(2) = v;
-        _params.z_vel_max = v;
+        _params.z_vel_max_up = v;
+		param_get(_params_handles.z_vel_max_down, &v);
+        _params.z_vel_max_down = v;
 		param_get(_params_handles.xy_ff, &v);
 		v = math::constrain(v, 0.0f, 1.0f);
 		_params.vel_ff(0) = v;
@@ -2144,18 +2151,19 @@ MulticopterPositionControl::task_main()
                         vel_sp_xy *= _params.xy_vel_max;
                     }
 
-                    if (vel_sp_z > _params.z_vel_max) {
-                        vel_sp_z = _params.z_vel_max;
+                    if (vel_sp_z > _params.z_vel_max_down) {
+                        vel_sp_z = _params.z_vel_max_down;
                     }
 
-                    if (vel_sp_z < -_params.z_vel_max){
-                        vel_sp_z = -_params.z_vel_max;
+                    if (vel_sp_z < -_params.z_vel_max_up){
+                        vel_sp_z = -_params.z_vel_max_up;
                     }
 
                     _vel_sp(0) = vel_sp_xy(0);
                     _vel_sp(1) = vel_sp_xy(1);
                     _vel_sp(2) = vel_sp_z;
 
+                    printf( "%.2f\n", (double)_vel_sp(2) );
 
                     if (_control_mode.flag_control_follow_restricted) {
                         if (_valid_vel_correction)

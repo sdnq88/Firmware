@@ -147,13 +147,22 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_D, 0.01f);
 /**
  * Maximum vertical velocity
  *
- * Maximum vertical velocity in AUTO mode and endpoint for stabilized modes (ALTCTRL, POSCTRL).
+ * Maximum vertical velocity when moving up
  *
  * @unit m/s
  * @min 0.0
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX, 4.0f);
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_U, 4.0f);
+
+/**
+ * Maximum vertical velocity when moving down
+ *
+ * @unit m/s
+ * @min 0.0
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_D, 4.0f);
 
 /**
  * Vertical velocity feed forward
