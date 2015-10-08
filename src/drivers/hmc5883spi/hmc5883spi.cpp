@@ -237,7 +237,7 @@ private:
 	 * @param enable set to 1 to enable self-test positive strap, -1 to enable
 	 *        negative strap, 0 to set to normal mode
 	 */
-	int			set_excitement(int enable);
+	int			set_excitement(int enable, bool enable_is_reg_value=false);
 
 	/**
 	 * Set the sensor range.
@@ -694,6 +694,9 @@ HMC5883::ioctl(struct file *filp, int cmd, unsigned long arg)
 
 	case MAGIOCEXSTRAP:
 		return set_excitement((int) arg);
+
+	case MAGIOCEXOVERRIDE:
+		return set_excitement((int) arg, true);
 
 	case MAGIOCSELFTEST:
 		return check_calibration();
@@ -1259,7 +1262,7 @@ int HMC5883::check_calibration()
 	return (!_calibrated);
 }
 
-int HMC5883::set_excitement(int enable)
+int HMC5883::set_excitement(int enable, bool enable_is_reg_value)
 {
 	int ret;
 	uint8_t tmp;
@@ -1273,10 +1276,15 @@ int HMC5883::set_excitement(int enable)
 	}
 
 	_conf_reg &= ~0x03; // no bias by default
-	if (enable > 0) {
-		_conf_reg |= 0x01; // positive bias
-	} else if (enable != 0) {
-		_conf_reg |= 0x02; // negative bias
+	if (!enable_is_reg_value) {
+		if (enable > 0) {
+			_conf_reg |= 0x01; // positive bias
+		} else if (enable != 0) {
+			_conf_reg |= 0x02; // negative bias
+		}
+	}
+	else {
+		_conf_reg |= enable & 0x03;
 	}
 
         // ::printf("set_excitement enable=%d regA=0x%x\n", (int)enable, (unsigned)_conf_reg);
