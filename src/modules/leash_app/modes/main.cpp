@@ -155,6 +155,7 @@ Base* Main::processTakeoff(int orbId)
         }
         else if (dm->airdog_status.state_aird == AIRD_STATE_IN_AIR)
         {
+            local_timer = 0;
             baseCondition.main = IN_FLINGHT;
             baseCondition.sub = NONE;
         }
