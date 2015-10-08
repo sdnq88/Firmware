@@ -20,6 +20,7 @@ namespace modes
 
 ModeConnect::ModeConnect(State Current) : 
     forcing_pairing(false),
+    wasPairing(false),
     startTime(0)
 {
     if (Current == State::UNKNOWN)
