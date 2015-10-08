@@ -112,6 +112,21 @@
 #include "sdlog2_format.h"
 #include "sdlog2_messages.h"
 
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+	#include <drivers/drv_airleash_kbd.h>
+	#define SDLOG_BUTT_DEVICE_PATH KBD_DEVICE_PATH
+	#define SDLOG_BUTT_SCAN_BUFFER_N_ITEMS KBD_SCAN_BUFFER_N_ITEMS
+#elif defined(CONFIG_ARCH_BOARD_AIRDOG_FMU)
+	#include <drivers/drv_frame_button.h>
+	#define SDLOG_BUTT_DEVICE_PATH FRAME_BUTT_DEVICE_PATH
+	#define SDLOG_BUTT_SCAN_BUFFER_N_ITEMS FRAME_BUTT_SCAN_BUFFER_N_ITEMS
+#else
+	#define SDLOG_BUTT_DEVICE_PATH "/dev/null"
+	#define SDLOG_BUTT_SCAN_BUFFER_N_ITEMS 1
+	typedef uint16_t pressed_mask_t;
+#endif
+
+
 /**
  * Logging rate.
  *
@@ -1095,6 +1110,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 			struct log_BTSI_s log_BTSI;
 			struct log_BTSO_s log_BTSO;
 			struct log_BTLK_s log_BTLK;
+			struct log_BUTT_s log_BUTT;
 		} body;
 	} log_msg = {
 		LOG_PACKET_HEADER_INIT(0)
@@ -1201,6 +1217,10 @@ int sdlog2_thread_main(int argc, char *argv[])
 	LOG_ORB_PARAM_SUBSCRIBE(subs.bt_evt_status_sub, ORB_ID(bt_evt_status), "SDLOG_M_BT_EVTS", sub_freq)
 	LOG_ORB_PARAM_SUBSCRIBE(subs.bt_link_status_sub, ORB_ID(bt_link_status), "SDLOG_M_BT_LINK", sub_freq)
 	//LOG_ORB_PARAM_SUBSCRIBE(subs.bt_channels_sub, ORB_ID(bt_channels), "SDLOG_M_BT_CH", sub_freq)
+
+	int butt_fd = open(SDLOG_BUTT_DEVICE_PATH , O_RDONLY | O_NONBLOCK);
+	pressed_mask_t butt_buffer[SDLOG_BUTT_SCAN_BUFFER_N_ITEMS];
+	int butt_read_ret;
 
 	thread_running = true;
 
@@ -1991,6 +2011,17 @@ int sdlog2_thread_main(int argc, char *argv[])
 			LOGBUFFER_WRITE_AND_COUNT(BTLK);
 		}
 
+		butt_read_ret = read(butt_fd, butt_buffer, sizeof(butt_buffer));
+		// If we have at least one full reading, report it
+		if (butt_read_ret >= sizeof(butt_buffer[0])) {
+			log_msg.msg_type = LOG_BUTT_MSG;
+			log_msg.body.log_BUTT.mask = butt_buffer[(butt_read_ret / sizeof(butt_buffer[0])) - 1];
+#ifdef CONFIG_ARCH_BOARD_AIRDOG_FMU
+			log_msg.body.log_BUTT.mask &= 1; // Frame button reports state in the last bit of the mask, shifting the mask at each tick
+#endif
+			LOGBUFFER_WRITE_AND_COUNT(BUTT);
+		}
+
 		/* signal the other thread new data, but not yet unlock */
 		if (logbuffer_count(&lb) > MIN_BYTES_TO_WRITE) {
 			/* only request write if several packets can be written at once */
@@ -2009,6 +2040,8 @@ int sdlog2_thread_main(int argc, char *argv[])
 	pthread_cond_destroy(&logbuffer_cond);
 
 	free(lb.data);
+	close(butt_fd);
+	// TODO! [AK] Unsubscribe from all the orbs to avoid memory leaks
 
 	warnx("exiting");
 
