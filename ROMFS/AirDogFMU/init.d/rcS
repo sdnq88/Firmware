@@ -35,6 +35,12 @@ set IO_FILE /etc/extras/px4io-v2_default.bin
 
 #set ALWAYS_DEBUG_MODE yes
 
+# Hack to reboot external mag after boot, pin is configured to clear, we enable it only after a timeout
+sleep 1
+gpio_tool set pf12=1
+# Allow periphery to boot before proceeding
+usleep 100000
+
 if [ notset$ALWAYS_DEBUG_MODE = notset ]
 then
 	if debug_button_pressed
