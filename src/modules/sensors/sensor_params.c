@@ -188,6 +188,15 @@ PARAM_DEFINE_FLOAT(SENS_MAG_CTEMP, -278.15f);
 PARAM_DEFINE_FLOAT(SENS_SON_FILT, 0.8f);
 
 /**
+ * Range finder sensor minimal and maximal values defined by manufacturer (or experimentally)
+ *
+ * @units meters
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(SENS_RANGE_MIN, 0.2f);
+PARAM_DEFINE_FLOAT(SENS_RANGE_MAX, 9.0f);
+
+/**
  * Sonar maximal accepted delta for non-spike/new level sonar measurment
  *
  * If sonar measurement delta is larger than this value it skiped (spike) or accepted as new surface level (if offset is stable).

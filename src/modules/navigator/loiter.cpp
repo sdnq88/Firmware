@@ -293,6 +293,9 @@ Loiter::execute_vehicle_command()
 			break;
 	}
 
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
+    NavigatorMode::execute_vehicle_command();
 }
 
 void

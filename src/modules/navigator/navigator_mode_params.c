@@ -58,6 +58,21 @@
 PARAM_DEFINE_FLOAT(NAV_TAKEOFF_ALT, 8.0f);
 
 /**
+ * Minimal allowed distance user is allowed to go with drone
+ *
+ * @units: meters
+ * @group: Navigator
+ */
+PARAM_DEFINE_FLOAT(NAV_MIN_ALT, 3.0f);
+
+/**
+ * toggle minimal altitude corellation with current follow altitude changes
+ *
+ * @units: bool
+ */
+PARAM_DEFINE_INT32(NAV_USE_ALT_COR, 1);
+
+/**
  * Acceptance radius to determine if setpoint have been reached
  *
  * @unit meters

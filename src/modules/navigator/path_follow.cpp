@@ -322,6 +322,9 @@ void PathFollow::execute_vehicle_command() {
 			}
 		}
 	}
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
+    NavigatorMode::execute_vehicle_command();
 }
 
 void PathFollow::update_traj_point_queue() {

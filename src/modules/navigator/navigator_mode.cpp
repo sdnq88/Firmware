@@ -173,8 +173,12 @@ NavigatorMode::updateParamHandles() {
     NavigatorMode::parameter_handles.follow_talt_offs = param_find("FOL_TALT_OFF");
 
     NavigatorMode::parameter_handles.son_min= param_find("SENS_SON_MIN");
+    NavigatorMode::parameter_handles.minimal_allowed_altitude= param_find("NAV_MIN_ALT");
+    NavigatorMode::parameter_handles.range_driver_min= param_find("SENS_RANGE_MIN");
+    NavigatorMode::parameter_handles.range_driver_max= param_find("SENS_RANGE_MAX");
     
     NavigatorMode::parameter_handles.off_min_speed_to_rotate = param_find("OFF_MIN_SPD_ROT");
+    NavigatorMode::parameter_handles.use_altitude_correlation = param_find("NAV_USE_ALT_COR");
 
 
 }
@@ -255,8 +259,12 @@ NavigatorMode::updateParamValues() {
     param_get(NavigatorMode::parameter_handles.follow_talt_offs, &(NavigatorMode::parameters.follow_talt_offs));
 
     param_get(NavigatorMode::parameter_handles.son_min, &(NavigatorMode::parameters.son_min));
+    param_get(NavigatorMode::parameter_handles.minimal_allowed_altitude, &(NavigatorMode::parameters.minimal_allowed_altitude));
+    param_get(NavigatorMode::parameter_handles.range_driver_min, &(NavigatorMode::parameters.range_driver_min));
+    param_get(NavigatorMode::parameter_handles.range_driver_max, &(NavigatorMode::parameters.range_driver_max));
 
     param_get(NavigatorMode::parameter_handles.off_min_speed_to_rotate, &(NavigatorMode::parameters.off_min_speed_to_rotate));
+    param_get(NavigatorMode::parameter_handles.use_altitude_correlation , &(NavigatorMode::parameters.use_altitude_correlation));
 }
 
 
@@ -326,6 +334,22 @@ NavigatorMode::update_vehicle_command()
 void
 NavigatorMode::execute_vehicle_command()
 {
+    if (parameters.use_altitude_correlation)
+    {
+        bool changed = false;
+        if (current_follow_alt - 1.0f < parameters.range_driver_max && current_follow_alt - 1.0f > parameters.minimal_allowed_altitude)
+        {
+            if (parameters.son_min != current_follow_alt - 1.0f)
+            {
+                parameters.son_min = current_follow_alt - 1.0f;
+                changed = true;
+            }
+        }
+        if (changed)
+        {
+                param_set(parameter_handles.son_min, &parameters.son_min);
+        }
+    }
 }
 
 void

@@ -129,8 +129,13 @@ struct PARAMETERS {
     float follow_talt_offs;
 
     float son_min;
+    float range_driver_min;
+    float range_driver_max;
+    float minimal_allowed_altitude;
 
     float off_min_speed_to_rotate;
+
+    int use_altitude_correlation;
 
 };
 
@@ -214,8 +219,13 @@ struct PARAM_HANDLES {
     param_t follow_talt_offs;
 
     param_t son_min;
+    param_t range_driver_min;
+    param_t range_driver_max;
+    param_t minimal_allowed_altitude;
 
     param_t off_min_speed_to_rotate;
+
+    param_t use_altitude_correlation;
 };
 
 class Navigator;
@@ -296,6 +306,8 @@ protected:
 
     static PARAMETERS parameters;
     static PARAM_HANDLES parameter_handles;
+
+    float current_follow_alt;
 
 private:
 

@@ -208,6 +208,9 @@ OffsetFollow::execute_vehicle_command() {
             // TODO:
             break;
     }
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
+    NavigatorMode::execute_vehicle_command();
 }
 
 
@@ -243,6 +246,9 @@ OffsetFollow::execute_vehicle_command_abs_follow() {
                 break;
         }
     }
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
+    NavigatorMode::execute_vehicle_command();
 }
 
 
@@ -275,6 +281,9 @@ OffsetFollow::execute_vehicle_command_circle_around() {
                 break;
         }
     }
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
+    NavigatorMode::execute_vehicle_command();
 }
 
 
@@ -315,6 +324,9 @@ OffsetFollow::execute_vehicle_command_front_follow() {
                 break;
         }
     }
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
+    NavigatorMode::execute_vehicle_command();
 }
 
 

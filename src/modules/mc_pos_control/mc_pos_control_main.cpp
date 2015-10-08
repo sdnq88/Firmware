@@ -2810,6 +2810,7 @@ float MulticopterPositionControl::landing_speed_correction() {
  * @out:    position correction variable
  */
 bool MulticopterPositionControl::ground_dist_correction(){
+    parameters_update(false);
     // No correction if not valid
     if (!_local_pos.dist_bottom_valid || !_params.sonar_correction_on)
         return false;
