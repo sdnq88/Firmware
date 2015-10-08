@@ -1806,6 +1806,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 			log_msg.body.log_DIST.bottom = buf.range_finder.distance;
 			log_msg.body.log_DIST.bottom_rate = 0.0f;
 			log_msg.body.log_DIST.flags = (buf.range_finder.valid ? 1 : 0);
+            param_get(param_find("SENS_SON_MIN"), &log_msg.body.log_DIST.minDist);
 			LOGBUFFER_WRITE_AND_COUNT(DIST);
 		}
 
