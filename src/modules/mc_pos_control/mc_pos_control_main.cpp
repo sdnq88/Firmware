@@ -2163,8 +2163,6 @@ MulticopterPositionControl::task_main()
                     _vel_sp(1) = vel_sp_xy(1);
                     _vel_sp(2) = vel_sp_z;
 
-                    printf( "%.2f\n", (double)_vel_sp(2) );
-
                     if (_control_mode.flag_control_follow_restricted) {
                         if (_valid_vel_correction)
                         {

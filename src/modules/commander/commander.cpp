@@ -2183,9 +2183,9 @@ int commander_thread_main(int argc, char *argv[])
 			orb_copy(ORB_ID(commander_request), commander_request_sub, &commander_request);
 
             mavlink_log_info(mavlink_fd, "Commnander request processing.\n");
-			switch(commander_request.request_type) {
-			case V_MAIN_STATE_CHANGE:
-			{
+
+            if (commander_request.request_type == V_MAIN_STATE_CHANGE ||
+                commander_request.request_type == MAIN_AIRD_STATE_CHANGE) {
 
                 int main_st = commander_request.main_state;
                 mavlink_log_info(mavlink_fd, "Main state change. %d\n", main_st);
@@ -2198,34 +2198,11 @@ int commander_thread_main(int argc, char *argv[])
 				} else {
                     mavlink_log_info(mavlink_fd, "State rejected\n");
                 }
-				break;
 			}
-			case V_DISARM:
-			{
-				arm_disarm(false, mavlink_fd, "Commander request.");
-                //Commander request to disarm from Navigator -> switch state to AUTO_STANDBY
-                if (main_state_transition(&status, MAIN_STATE_AUTO_STANDBY, mavlink_fd) == TRANSITION_CHANGED) {
-					status_changed = true;
-				} else {
-                    mavlink_log_info(mavlink_fd, "State rejected\n");
-                }
-				break;
-			}
-			case V_RESET_MODE_ARGS:
-			{
-				switch (commander_request.main_state) {
-					case MAIN_STATE_LOITER:
-					{
-						status.auto_takeoff_cmd = false;
-						status_changed = true;
-						break;
-					}
-				}
 
-				break;
-			}
-			case AIRD_STATE_CHANGE:
-            {
+
+			if (commander_request.request_type == AIRD_STATE_CHANGE ||
+                commander_request.request_type == MAIN_AIRD_STATE_CHANGE) {
                 if ( status.airdog_state != AIRD_STATE_TAKING_OFF && commander_request.airdog_state == AIRD_STATE_TAKING_OFF ) {
                     if ( status.airdog_state != AIRD_STATE_LANDING && status.airdog_state != AIRD_STATE_IN_AIR ) {
                         commander_error_code init_error = COMMANDER_ERROR_OK;
@@ -2256,15 +2233,31 @@ int commander_thread_main(int argc, char *argv[])
                 	status.auto_takeoff_cmd = false;
 					status_changed = true;
 				}
-				break;
             }
 
-			default:
-				break;
+			if (commander_request.request_type == V_DISARM) {
+				arm_disarm(false, mavlink_fd, "Commander request.");
+                //Commander request to disarm from Navigator -> switch state to AUTO_STANDBY
+                if (main_state_transition(&status, MAIN_STATE_AUTO_STANDBY, mavlink_fd) == TRANSITION_CHANGED) {
+					status_changed = true;
+				} else {
+                    mavlink_log_info(mavlink_fd, "State rejected\n");
+                }
 			}
 
-			//Process OTHER requests or combined requests
+			if (commander_request.request_type == V_RESET_MODE_ARGS) {
+				switch (commander_request.main_state) {
+					case MAIN_STATE_LOITER:
+					{
+						status.auto_takeoff_cmd = false;
+						status_changed = true;
+						break;
+					}
+				}
+			}
 
+
+			//Process OTHER requests or combined requests
 			//Process camera mode changes
 			if (commander_request.camera_mode_changed)
             {
@@ -2288,6 +2281,7 @@ int commander_thread_main(int argc, char *argv[])
             }
 
 		}
+
 
         if (status.arming_state != ARMING_STATE_ARMED){
             if (status.airdog_state != AIRD_STATE_STANDBY)
