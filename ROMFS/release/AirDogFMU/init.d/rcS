@@ -7,12 +7,6 @@ set GPS_FAKE no
 set MAV_TYPE 2
 set TUNE_OUT_ERROR ML<<CP4CP4CP4CP4CP4
 
-# Hack to reboot external mag after boot, pin is configured to clear, we enable it only after a timeout
-sleep 1
-gpio_tool set pf12=1
-# Allow periphery to boot before proceeding
-usleep 100000
-
 #
 # Try to mount the microSD card.
 #
