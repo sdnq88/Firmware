@@ -25,6 +25,7 @@ MODULES += drivers/gps
 # Sensors
 #
 MODULES += modules/sensors_probe
+MODULES += modules/sensor_validation
 
 #
 # OTP write modules
