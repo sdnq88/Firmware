@@ -1,3 +1,7 @@
+uorb start
+leash_display start
+leash_app start test
+
 if leash start
 then
 	echo "[init] modules/leash started."

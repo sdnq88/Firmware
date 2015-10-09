@@ -95,7 +95,7 @@ int main(int argc, const char * const * const argv)
         }
         else
         {
-            printf("already running");
+            printf("already running\n");
             /* this is not an error */
         }
     }
@@ -107,7 +107,7 @@ int main(int argc, const char * const * const argv)
         }
         else
         {
-            printf("not started");
+            printf("not started\n");
         }
     }
     else
