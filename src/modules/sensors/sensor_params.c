@@ -403,7 +403,13 @@ PARAM_DEFINE_FLOAT(SENS_BARO_QNH, 1013.25f);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(SENS_BOARD_ROT, 6);
+PARAM_DEFINE_INT32(SENS_BOARD_ROT,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		0
+#else
+		6
+#endif
+);
 
 /**
  * Board rotation Y (Pitch) offset
@@ -444,7 +450,13 @@ PARAM_DEFINE_FLOAT(SENS_BOARD_Z_OFF, 180.0f);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(SENS_EXT_MAG_ROT, 2);
+PARAM_DEFINE_INT32(SENS_EXT_MAG_ROT,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		0
+#else
+		2
+#endif
+);
 
 /**
 * Set usage of external magnetometer
