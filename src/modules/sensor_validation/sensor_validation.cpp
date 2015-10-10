@@ -342,6 +342,9 @@ void validate_attitude(const Variance &pitch_variance, const Variance &roll_vari
 	param_get(param_find("SVAL_ATT_THRESH"), &tmp_float_param);
 	float attitude_variance_threshold = tmp_float_param * M_DEG_TO_RAD_F;
 	attitude_variance_threshold *= attitude_variance_threshold;
+	param_get(param_find("SVAL_YAW_THRESH"), &tmp_float_param);
+	float yaw_variance_threshold = tmp_float_param * M_DEG_TO_RAD_F;
+	yaw_variance_threshold *= yaw_variance_threshold;
 	param_get(param_find("SVAL_ATT_ANGLE"), &tmp_float_param);
 	float attitude_mean_threshold = tmp_float_param * M_DEG_TO_RAD_F;
 	attitude_mean_threshold *= attitude_mean_threshold;
@@ -362,14 +365,14 @@ void validate_attitude(const Variance &pitch_variance, const Variance &roll_vari
 	}
 	else if (pitch_variance.get_variance() > attitude_variance_threshold
 			|| roll_variance.get_variance() > attitude_variance_threshold
-			|| yaw_variance.get_variance() > attitude_variance_threshold) {
+			|| yaw_variance.get_variance() > yaw_variance_threshold) {
 		if (res > SENSOR_STATUS_UNSTABLE) {
 			res = SENSOR_STATUS_UNSTABLE;
 		}
 		sens_status.attitude_status = SENSOR_STATUS_UNSTABLE;
 		warnx("Attitude variance is too high.");
-		DOG_PRINT("Expected variance: %.6f, pitch: %.6f,\n\troll: %.6f, yaw: %.6f\n",
-				(double) attitude_variance_threshold, (double) pitch_variance.get_variance(),
+		DOG_PRINT("Expected variance: %.6f, expected yaw: %.6f, pitch: %.6f,\n\troll: %.6f, yaw: %.6f\n",
+				(double) attitude_variance_threshold, (double) yaw_variance_threshold, (double) pitch_variance.get_variance(),
 				(double) roll_variance.get_variance(), (double) yaw_variance.get_variance());
 	}
 	else if (powf(fabsf(pitch_variance.get_mean()), 2)

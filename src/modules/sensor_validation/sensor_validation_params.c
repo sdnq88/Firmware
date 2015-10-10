@@ -14,6 +14,16 @@ PARAM_DEFINE_FLOAT(SVAL_GOOD_FRACT, 0.99f);
  */
 PARAM_DEFINE_FLOAT(SVAL_ATT_THRESH, 0.7f);
 /*
+ * Variation threshold in degrees for yaw checks. Variation less than this will be considered ok
+ */
+PARAM_DEFINE_FLOAT(SVAL_YAW_THRESH,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		2.1f
+#else
+		0.7f
+#endif
+);
+/*
  * Threshold for mean angle (degrees) on pitch and roll together for attitude checks. Angles less than this will be ok.
  */
 PARAM_DEFINE_FLOAT(SVAL_ATT_ANGLE, 5.0f);
@@ -32,7 +42,13 @@ PARAM_DEFINE_FLOAT(SVAL_LAST_TEMP, -278.15f);
 /*
  * What temperature difference should trigger recheck
  */
-PARAM_DEFINE_FLOAT(SVAL_TEMP_THRESH, 5.0f);
+PARAM_DEFINE_FLOAT(SVAL_TEMP_THRESH,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		12.0f
+#else
+		5.0f
+#endif
+);
 /*
  * Enable or disable the validation. Disabled on 0, enabled otherwise.
  */
