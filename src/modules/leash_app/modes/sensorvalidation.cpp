@@ -12,10 +12,18 @@
 namespace modes
 {
 
-SensorValidation::SensorValidation()
+SensorValidation::SensorValidation(bool forceStart)
 {
-    status = Status::GetStatus;
-    DisplayHelper::showInfo(INFO_SENSOR_VALIDATION_SHOW_STATUS, 0);
+    if (forceStart)
+    {
+        DisplayHelper::showInfo(INFO_SENSOR_VALIDATION_OK_TO_START, 0);
+        status = Status::OkToStart;
+    }
+    else
+    {
+        status = Status::GetStatus;
+        DisplayHelper::showInfo(INFO_SENSOR_VALIDATION_SHOW_STATUS, 0);
+    }
 }
 
 int SensorValidation::getTimeout()

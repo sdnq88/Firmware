@@ -10,7 +10,7 @@ namespace modes
 class SensorValidation : public Base
 {
 public:
-    SensorValidation();
+    SensorValidation(bool forceStart = false);
 
     virtual int getTimeout();
     virtual void listenForEvents(bool awaitMask[]);

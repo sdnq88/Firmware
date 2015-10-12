@@ -449,6 +449,11 @@ void Screen::showMenu(int buttons, int type, int value, const char *presetName, 
             text = "AirDog calib";
             break;
 
+        case MENUTYPE_SENSOR_CHECK:
+            imageId = IMAGE_SCREENS_ICONS_SETTINGS;
+            text = "Sensor check";
+            break;
+
         case MENUTYPE_COMPASS:
             imageId = IMAGE_SCREENS_ICONS_COMPASS;
             text = "Compass";

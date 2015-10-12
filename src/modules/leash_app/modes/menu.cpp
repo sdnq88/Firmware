@@ -13,6 +13,7 @@
 #include "connect.h"
 #include "calibrate.h"
 #include "acquiring_gps.h"
+#include "sensorvalidation.h"
 #include "../bluetoothhelper.h"
 #include "../displayhelper.h"
 #include "../uorb_functions.h"
@@ -114,7 +115,7 @@ struct Menu::Entry Menu::entries[Menu::MENUENTRY_SIZE] =
     MENUBUTTON_LEFT | MENUBUTTON_RIGHT,
     nullptr, // use previous preset name
     Menu::MENUENTRY_CALIBRATION,
-    Menu::MENUENTRY_AIRDOG_CALIBRATION,
+    Menu::MENUENTRY_SENSOR_CHECK,
     Menu::MENUENTRY_IGNORE,
     Menu::MENUENTRY_IGNORE,
     Menu::MENUENTRY_ACTION_CONFIRM,
@@ -139,14 +140,26 @@ struct Menu::Entry Menu::entries[Menu::MENUENTRY_SIZE] =
     0,
     MENUBUTTON_LEFT | MENUBUTTON_RIGHT,
     nullptr, // use previous preset name
-    Menu::MENUENTRY_PAIRING,
+    Menu::MENUENTRY_SENSOR_CHECK,
     Menu::MENUENTRY_CALIBRATION,
     Menu::MENUENTRY_IGNORE,
     Menu::MENUENTRY_IGNORE,
     Menu::MENUENTRY_ACTION,
     Menu::MENUENTRY_SETTINGS,
 },
-
+{
+    // Menu::MENUENTRY_SENSOR_CHECK,
+    MENUTYPE_SENSOR_CHECK,
+    0,
+    MENUBUTTON_LEFT | MENUBUTTON_RIGHT,
+    nullptr, // use previous preset name
+    Menu::MENUENTRY_PAIRING,
+    Menu::MENUENTRY_AIRDOG_CALIBRATION,
+    Menu::MENUENTRY_IGNORE,
+    Menu::MENUENTRY_IGNORE,
+    Menu::MENUENTRY_ACTION,
+    Menu::MENUENTRY_SETTINGS,
+},
 // -------- Calibration menu
 {
     // Menu::MENUENTRY_COMPASS,
@@ -640,11 +653,12 @@ Base* Menu::makeAction()
             int entries[] = {
                 MENUENTRY_PAIRING,
                 MENUENTRY_CALIBRATION,
-                MENUENTRY_AIRDOG_CALIBRATION
+                MENUENTRY_AIRDOG_CALIBRATION,
+                MENUENTRY_SENSOR_CHECK,
             };
 
             // don't show airdog calibration if dron is not connect
-            int c = dm->activityManager.params_received() ? 3 : 2;
+            int c = dm->activityManager.params_received() ? 4 : 2;
 
             makeMenu(entries, c);
 
@@ -662,6 +676,10 @@ Base* Menu::makeAction()
             previousEntry = currentEntry;
             calibrateMode = CALIBRATE_AIRDOG;
             switchEntry(MENUENTRY_COMPASS);
+            break;
+
+        case MENUENTRY_SENSOR_CHECK:
+            nextMode = new SensorValidation(true);
             break;
 
         case MENUENTRY_PAIRING:
