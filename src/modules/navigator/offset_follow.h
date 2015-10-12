@@ -115,6 +115,8 @@ private:
 
     float _front_follow_additional_angle;
 
+    float _start_offset;
+
 };
 
 #endif

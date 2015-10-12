@@ -28,7 +28,8 @@ OffsetFollow::OffsetFollow(Navigator *navigator, const char *name) :
     _offset_len(0.0f),
     _angle_err(0.0f),
     _vstatus(nullptr),
-    _base_offset_inited(false)
+    _base_offset_inited(false),
+    _start_offset(0.0f)
 {
     updateParameters();
 }
@@ -68,6 +69,13 @@ OffsetFollow::on_activation()
 
 	_base_offset(2) = 0.0f;
 
+    float target_alt_delta = target_pos->alt - _navigator->get_target_start_alt();
+
+    _start_offset = global_pos->alt - (_navigator->get_drone_start_alt() + target_alt_delta);
+
+    NavigatorMode::desired_alt_above_ground = _start_offset + ( -_base_offset(2));
+    update_range_finder_alt();
+    
     if (_vstatus->nav_state == NAVIGATION_STATE_CIRCLE_AROUND) {
 
         _rotation_speed_ms = NavigatorMode::parameters.offset_rot_speed_ch_cmd_step;
@@ -208,9 +216,11 @@ OffsetFollow::execute_vehicle_command() {
             // TODO:
             break;
     }
+
     // For range finder min altitude correlation with up/down
-    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
-    NavigatorMode::execute_vehicle_command();
+    NavigatorMode::desired_alt_above_ground = _start_offset + ( -_base_offset(2));
+    update_range_finder_alt();
+
 }
 
 
@@ -246,9 +256,8 @@ OffsetFollow::execute_vehicle_command_abs_follow() {
                 break;
         }
     }
+
     // For range finder min altitude correlation with up/down
-    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
-    NavigatorMode::execute_vehicle_command();
 }
 
 
@@ -281,9 +290,6 @@ OffsetFollow::execute_vehicle_command_circle_around() {
                 break;
         }
     }
-    // For range finder min altitude correlation with up/down
-    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
-    NavigatorMode::execute_vehicle_command();
 }
 
 
@@ -324,9 +330,6 @@ OffsetFollow::execute_vehicle_command_front_follow() {
                 break;
         }
     }
-    // For range finder min altitude correlation with up/down
-    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
-    NavigatorMode::execute_vehicle_command();
 }
 
 

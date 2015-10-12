@@ -73,6 +73,7 @@
 #include <mathlib/mathlib.h>
 #include <mavlink/mavlink_log.h>
 
+float NavigatorMode::desired_alt_above_ground = 0.0f;
 
 NavigatorMode::NavigatorMode(Navigator *navigator, const char *name) :
 	SuperBlock(navigator, name),
@@ -334,20 +335,25 @@ NavigatorMode::update_vehicle_command()
 void
 NavigatorMode::execute_vehicle_command()
 {
+}
+
+void
+NavigatorMode::update_range_finder_alt()
+{
     if (parameters.use_altitude_correlation)
     {
-        bool changed = false;
-        if (current_follow_alt - 1.0f < parameters.range_driver_max && current_follow_alt - 1.0f > parameters.minimal_allowed_altitude)
+        float son_min = NavigatorMode::desired_alt_above_ground - 1.0f;
+
+        if (son_min > parameters.range_driver_max)
+            son_min = parameters.range_driver_max;
+
+        if (son_min < parameters.minimal_allowed_altitude)
+            son_min = parameters.minimal_allowed_altitude;
+
+        if (parameters.son_min != son_min)
         {
-            if (parameters.son_min != current_follow_alt - 1.0f)
-            {
-                parameters.son_min = current_follow_alt - 1.0f;
-                changed = true;
-            }
-        }
-        if (changed)
-        {
-                param_set(parameter_handles.son_min, &parameters.son_min);
+            parameters.son_min = son_min;
+            param_set(parameter_handles.son_min, &parameters.son_min);
         }
     }
 }

@@ -283,6 +283,10 @@ public:
     void disarm();
     void resetModeArguments(main_state_t main_state);
 
+    void update_range_finder_alt();
+
+    static float desired_alt_above_ground;
+
 protected:
 	Navigator *_navigator;
 
@@ -309,9 +313,11 @@ protected:
 
     float current_follow_alt;
 
+
 private:
 
 	bool _first_run;
+
 
 	/*
 	 * This class has ptr data members, so it should not be copied,

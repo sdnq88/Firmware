@@ -87,6 +87,10 @@ Loiter::on_inactive()
 void
 Loiter::on_activation()
 {
+
+	target_pos = _navigator->get_target_position();
+	global_pos = _navigator->get_global_position();
+
 	updateParameters();
 
 	//Ignore all commands received from target so far
@@ -166,6 +170,12 @@ Loiter::on_activation()
     }
 
     _navigator->invalidate_setpoint_triplet();
+
+    float target_alt_delta = target_pos->alt -  _navigator -> get_target_start_alt();
+    float ground_alt = _navigator->get_drone_start_alt() + target_alt_delta; 
+
+    NavigatorMode::desired_alt_above_ground= global_pos->alt - ground_alt;
+    NavigatorMode::update_range_finder_alt();
 
     if (vstatus->auto_takeoff_cmd) {
         bool preflight_motor_check_not_needed_or_success = true;
@@ -293,9 +303,13 @@ Loiter::execute_vehicle_command()
 			break;
 	}
 
-    // For range finder min altitude correlation with up/down
-    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
-    NavigatorMode::execute_vehicle_command();
+    float target_alt_delta = target_pos->alt -  _navigator -> get_target_start_alt();
+
+    float ground_alt = _navigator->get_drone_start_alt() + target_alt_delta; 
+
+    NavigatorMode::desired_alt_above_ground = pos_sp_triplet->current.alt - ground_alt;
+    update_range_finder_alt();
+
 }
 
 void

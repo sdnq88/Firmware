@@ -114,6 +114,9 @@ void PathFollow::on_activation() {
     _y_start = _drone_local_pos.y;
     _x_start = _drone_local_pos.x;
 
+    NavigatorMode::desired_alt_above_ground = ( -_vertical_offset ) + NavigatorMode::parameters.follow_talt_offs;
+    update_range_finder_alt();
+
 	if (!_inited) {
 		mavlink_log_critical(_mavlink_fd, "Follow Path mode wasn't initialized! Aborting...");
 		int buzzer = open(TONEALARM_DEVICE_PATH, O_WRONLY);
@@ -322,9 +325,10 @@ void PathFollow::execute_vehicle_command() {
 			}
 		}
 	}
+
     // For range finder min altitude correlation with up/down
-    NavigatorMode::current_follow_alt = 0.0f; //TODO [MF]: function to get current follow altitude
-    NavigatorMode::execute_vehicle_command();
+    NavigatorMode::desired_alt_above_ground = ( -_vertical_offset ) + NavigatorMode::parameters.follow_talt_offs;
+    update_range_finder_alt();
 }
 
 void PathFollow::update_traj_point_queue() {
