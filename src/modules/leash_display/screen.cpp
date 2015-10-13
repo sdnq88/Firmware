@@ -96,6 +96,13 @@ void Screen::showLogo()
     blockLogo.draw();
 }
 
+void Screen::showTest()
+{
+    BitmapBlock blockLogo(0, 0, IMAGE_SCREENS_LOGO);
+    blockLogo.draw();
+    display_draw_rectangle(0, 0, 127, 63);
+}
+
 void Screen::showMain(int mode, const char *presetName, int leashBattery, int airdogBattery,
                       int airdogMode, int followMode, int landMode,
                       int leashGPS, int airdogGPS)

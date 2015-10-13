@@ -14,6 +14,10 @@ public:
     virtual int getTimeout();
     virtual void listenForEvents(bool awaitMask[]);
     virtual Base* doEvent(int orbId);
+
+protected:
+    int pressedButtonMask;
+
 };
 
 } // end of namespace modes

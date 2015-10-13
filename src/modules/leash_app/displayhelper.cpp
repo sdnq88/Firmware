@@ -8,6 +8,21 @@
 
 static orb_advert_t to_leash_display = 0;
 
+void DisplayHelper::showTest()
+{
+    struct leash_display_s leash_display;
+
+    leash_display.screenId = LEASHDISPLAY_TEST;
+    if (to_leash_display > 0)
+    {
+        orb_publish(ORB_ID(leash_display), to_leash_display, &leash_display);
+    }
+    else
+    {
+        to_leash_display = orb_advertise(ORB_ID(leash_display), &leash_display);
+    }
+}
+
 void DisplayHelper::showLogo()
 {
     struct leash_display_s leash_display;

@@ -7,6 +7,7 @@ class Screen
 public:
     static void init();
     static void showLogo();
+    static void showTest();
     static void showMain(int mode, const char *presetName, int leashBattery, int airdogBattery,
                          int airdogMode, int followMode, int landMode,
                          int leashGPS, int airdogGPS);

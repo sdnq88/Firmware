@@ -5,6 +5,7 @@ class DisplayHelper
 {
 public:
     static void showLogo();
+    static void showTest();
     static void showMain(int mode, const char *presetName,
                          int airdogMode, int followMode, int landMode,
                          int leashGPS, int airdogGPS);
