@@ -439,7 +439,13 @@ PARAM_DEFINE_FLOAT(SENS_BOARD_X_OFF, 0.0f);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_FLOAT(SENS_BOARD_Z_OFF, 180.0f);
+PARAM_DEFINE_FLOAT(SENS_BOARD_Z_OFF,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		0.0f
+#else
+		180.0f
+#endif
+);
 
 /**
  * External magnetometer rotation
