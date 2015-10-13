@@ -350,6 +350,7 @@ ToneAlarm::ToneAlarm() :
 	//_debug_enabled = true;
 	// _default_tunes[TONE_STARTUP_TUNE] = "MFT240L8 O4aO5dc O4aO5dc O4aO5dc L16dcdcdcdc";		// startup tune
 	// _default_tunes[TONE_STARTUP_TUNE] = "MFT150L8 O3def1e4.c.O2f1";		// startup tune (Terminator style)
+	_default_tunes[TONE_DEV_STARTUP_TUNE] = "MFT200L16 O3def2e8.c.O2f2";		// development firmware startup tune hastened terminator style
 	// _default_tunes[TONE_STARTUP_TUNE] = "MFT150L8 O3bbb4bbb4bO4dO3g.a16b4O4P4ccc.c16cO3bbb16b16baaga4"; // startup tune (Christmas style)
 	_default_tunes[TONE_STARTUP_TUNE] = "MFT220L8 O2cegO3c."; // startup tune AirDog original
 	_default_tunes[TONE_ERROR_TUNE] = "MBT200a8a8a8PaaaP";						// ERROR tone
@@ -375,6 +376,7 @@ ToneAlarm::ToneAlarm() :
     _default_tunes[TONE_LANDING1] = "MFT100O3g#4";		// TONE_LANDING
     _default_tunes[TONE_LANDING2] = "MFT100O4d4";		// TONE_LANDING
 
+    _tune_names[TONE_DEV_STARTUP_TUNE] = "dev_startup"; // startup tune for dev firmwares
 	_tune_names[TONE_STARTUP_TUNE] = "startup";			// startup tune
 	_tune_names[TONE_ERROR_TUNE] = "error";				// ERROR tone
 	_tune_names[TONE_NOTIFY_POSITIVE_TUNE] = "positive";		// Notify Positive tone
