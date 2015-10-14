@@ -285,6 +285,16 @@ PARAM_DEFINE_FLOAT(LAND_MAX_XY_V, 2.0f);
 PARAM_DEFINE_FLOAT(MPC_TAKEOFF_SPD, 2.5f);
 
 /**
+ * Takeoff minimum thrust warmup time in microseconds
+ */
+PARAM_DEFINE_INT32(MPC_TAKEOFF_WARM, 1000000);
+
+/**
+ * Takeoff gradient velocity time in microseconds
+ */
+PARAM_DEFINE_INT32(MPC_TAKEOFF_GRAD, 500000);
+
+/**
  * Follow mode velocity feed-forward for XY plane
  *
  * Target velocity feed-forward in follow mode.

@@ -227,6 +227,9 @@ private:
 
         param_t rtl_alt;
 
+        param_t takeoff_warmup_time;
+        param_t takeoff_gradient_time;
+
 	}		_params_handles;		/**< handles for interesting parameters */
 
 	struct {
@@ -291,6 +294,9 @@ private:
 		float pitch_lpf_cut;
 
 		float rtl_alt;
+
+		uint32_t takeoff_warmup_time;
+		uint32_t takeoff_gradient_time;
 	}		_params;
 
 	struct map_projection_reference_s _ref_pos;
@@ -641,6 +647,8 @@ MulticopterPositionControl::MulticopterPositionControl() :
     _params_handles.land_correction_on = param_find("LAND_CORR_ON");
     _params_handles.max_land_xy_speed = param_find("LAND_MAX_XY_V");
 	_params_handles.takeoff_speed	= param_find("MPC_TAKEOFF_SPD");
+    _params_handles.takeoff_warmup_time = param_find("MPC_TAKEOFF_WARM");
+    _params_handles.takeoff_gradient_time = param_find("MPC_TAKEOFF_GRAD");
 
     _params_handles.yaw_dead_zone_r = param_find("A_YAW_DEAD_Z_R");
     _params_handles.yaw_gradient_zone_r = param_find("A_YAW_GRAD_Z_R");
@@ -736,6 +744,8 @@ MulticopterPositionControl::parameters_update(bool force)
         param_get(_params_handles.regular_land_speed, &_params.regular_land_speed);
         param_get(_params_handles.land_correction_on, &_params.land_correction_on);
 		param_get(_params_handles.takeoff_speed, &_params.takeoff_speed);
+		param_get(_params_handles.takeoff_warmup_time, &_params.takeoff_warmup_time);
+		param_get(_params_handles.takeoff_gradient_time, &_params.takeoff_gradient_time);
 		param_get(_params_handles.tilt_max_land, &_params.tilt_max_land);
 		_params.tilt_max_land = math::radians(_params.tilt_max_land);
         param_get(_params_handles.max_land_xy_speed, &_params.max_land_xy_speed);
@@ -1880,6 +1890,7 @@ MulticopterPositionControl::task_main()
 	bool was_armed = false;
 
 	hrt_abstime t_prev = 0;
+	hrt_abstime takeoff_start_time = 0;
 
 	math::Vector<3> thrust_int;
 	thrust_int.zero();
@@ -1948,6 +1959,7 @@ MulticopterPositionControl::task_main()
 		else if (!_control_mode.flag_armed) {
 			was_armed = false;
 			_mode_auto = false;
+			takeoff_start_time = 0;
 		}
 
 		was_armed = _control_mode.flag_armed;
@@ -2119,6 +2131,8 @@ MulticopterPositionControl::task_main()
 					_att_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_att_sp);
 				}
 
+				takeoff_start_time = 0; // Reset takeoff timer in case we were disarmed before we've finished
+
 			} else {
 
 				/* run position & altitude controllers, calculate velocity setpoint */
@@ -2287,7 +2301,21 @@ MulticopterPositionControl::task_main()
 						if (_vel_sp.data[2] < -_params.takeoff_speed){
 							_vel_sp.data[2] = -_params.takeoff_speed;
 						}
+						if (takeoff_start_time == 0) {
+							takeoff_start_time = t;
+						}
+						// Allow the motors to "warm up" at minimal thrust
+						else if (t - takeoff_start_time < _params.takeoff_warmup_time) {
+							_vel_sp.data[2] = 42; // random constant going _down_
+						}
+						// Ensure that we go for the desired velocity for some time, but increase velocity gradually
+						else if (t - takeoff_start_time < _params.takeoff_warmup_time + _params.takeoff_gradient_time) {
+							_vel_sp.data[2] = _vel_sp.data[2] * (t - takeoff_start_time - _params.takeoff_warmup_time) / _params.takeoff_gradient_time;
+						}
 					}
+				}
+				else {
+					takeoff_start_time = 0;
 				}
 
                 //Ground distance correction
