@@ -309,6 +309,7 @@ struct log_BATT_s {
 struct log_DIST_s {
 	float bottom;
 	float bottom_rate;
+    float minDist;
 	uint8_t flags;
 };
 
@@ -585,6 +586,11 @@ struct log_TGPS_s {
 /* !!! ID 79 used up by raw sensors */
 /* !!! ID 80 used up by raw local position */
 
+#define LOG_BUTT_MSG 81
+struct log_BUTT_s {
+	uint16_t mask;
+};
+
 /********** SYSTEM MESSAGES, ID > 0x80 **********/
 
 /* --- TIME - TIME STAMP --- */
@@ -635,7 +641,7 @@ static const struct log_format_s log_formats[] = {
 	LOG_FORMAT(ESC, "HBBBHHffiffH",		"count,nESC,Conn,N,Ver,Adr,Volt,Amp,RPM,Temp,SetP,SetPRAW"),
 	LOG_FORMAT(GVSP, "fff",			"VX,VY,VZ"),
 	LOG_FORMAT(BATT, "ffff",		"V,VFilt,C,Discharged"),
-	LOG_FORMAT(DIST, "ffB",			"Bottom,BottomRate,Flags"),
+	LOG_FORMAT(DIST, "fffB",			"Bottom,BottomRate,MinDist,Flags"),
 	LOG_FORMAT_S(TEL0, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
 	LOG_FORMAT_S(TEL1, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
 	LOG_FORMAT_S(TEL2, TEL, "BBBBHHBQ",		"RSSI,RemRSSI,Noise,RemNoise,RXErr,Fixed,TXBuf,HbTime"),
@@ -666,6 +672,7 @@ static const struct log_format_s log_formats[] = {
 	LOG_FORMAT(BTEV, BT_EVT_STATUS_SDLOG_TYPES, BT_EVT_STATUS_SDLOG_NAMES),
 	LOG_FORMAT(BTLK, BT_LINK_STATUS_SDLOG_TYPES, BT_LINK_STATUS_SDLOG_NAMES),
 	//LOG_FORMAT(BTCH, "IIIIIIIIIIIIII", "xT1,xT2,xT3,xT4,xT5,xT6,xT7,Rx1,Rx2,Rx3,Rx4,Rx5,Rx6,Rx7"),
+	LOG_FORMAT(BUTT, "H", "LastMask"),
 
 	/* system-level messages, ID >= 0x80 */
 	/* FMT: don't write format of format message, it's useless */

@@ -30,7 +30,7 @@ class AccelCalibrator {
 		// Calculate correct scales and offsets based on accel_measure data. Sets accel_T and accel_offs
 		void calculate_calibration_values(math::Matrix<3,3> &accel_T, math::Vector<3> &accel_offs);
 		// Try to detect oriented position of the sensor. Returns axis number for calibrated_axes or -1 in case of error
-		int detect_orientation();
+		int detect_orientation(uint64_t still_period=2000000);
 		// Determine which of the axis and in which direction was sampled. Returns axis number for calibrated_axes or -1 in case of error
 		int detect_g(float accelerations[3]);
 		// Restore calibration values from parameter storage
@@ -45,7 +45,7 @@ class AccelCalibrator {
 		// Initialize sensor and prepare for calibration
 		CALIBRATION_RESULT init();
 		// Collect sample for one axis. Should be called while sample_needed is true
-		CALIBRATION_RESULT sample_axis();
+		CALIBRATION_RESULT sample_axis(uint64_t still_period=2000000);
 		// Read and average samples into the accel_measure array. Current_axis must be set via sample_axis
 		CALIBRATION_RESULT read_samples();
 		// When enough samples has been collected, calculate actual scaling and offsets

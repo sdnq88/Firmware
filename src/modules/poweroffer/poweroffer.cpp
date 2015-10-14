@@ -9,6 +9,7 @@
 
 #include <board_config.h>
 #include <dog_debug.hpp>
+#include <quick_log/quick_log.hpp>
 #include <systemlib/systemlib.h>
 #include <uORB/topics/vehicle_status.h>
 #include <uORB/uORB.h>
@@ -44,7 +45,7 @@ int thread_main(int argc, char ** argv) {
 				}
 			}
 			else if (vehicle_status.battery_remaining < critical_level) {
-				printf("Battery is low %5.4f shutting down power!\n", (double) vehicle_status.battery_remaining);
+				QLOG_literal("Battery is low %5.4f shutting down power!\n", (double) vehicle_status.battery_remaining);
 				stm32_gpiowrite(GPIO_VDD_FORCE_POWER, 0);
 				stm32_gpiowrite(GPIO_VDD_3V3_SENSORS_EN, 0);
 				stm32_gpiowrite(GPIO_VDD_PERIPHERY_EN, 0);

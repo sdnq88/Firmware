@@ -25,6 +25,7 @@ MODULES += drivers/gps
 # Sensors
 #
 MODULES += modules/sensors_probe
+MODULES += modules/sensor_validation
 
 #
 # OTP write modules
@@ -43,10 +44,15 @@ MODULES += systemcmds/mem
 #
 MODULES += modules/i2c_exchange
 MODULES += modules/gpio_tool
+MODULES += modules/airdog/calibrator
 
 #
 # Minimal required module set
 #
+LIBRARIES += lib/mathlib/CMSIS
+MODULES += lib/mathlib
+MODULES += lib/conversion
+MODULES += drivers/calibration
 MODULES += drivers/device
 MODULES += drivers/led
 MODULES += drivers/stm32
@@ -54,12 +60,18 @@ MODULES += drivers/stm32/adc
 MODULES += drivers/stm32/tone_alarm
 MODULES += modules/systemlib
 MODULES += modules/uORB
+MODULES += modules/eparam
 MODULES += systemcmds/boardinfo
 MODULES += systemcmds/nshterm
 MODULES += systemcmds/param
 MODULES += systemcmds/reboot
 MODULES += systemcmds/ver
 
+#
+# Logging
+#
+
+MODULES	+= modules/quick_log
 #
 # Transitional support - add commands from the NuttX export archive.
 #

@@ -73,6 +73,7 @@
 #include <mathlib/mathlib.h>
 #include <mavlink/mavlink_log.h>
 
+float NavigatorMode::desired_alt_above_ground = 0.0f;
 
 NavigatorMode::NavigatorMode(Navigator *navigator, const char *name) :
 	SuperBlock(navigator, name),
@@ -157,6 +158,8 @@ NavigatorMode::updateParamHandles() {
     NavigatorMode::parameter_handles.offset_max_distance = param_find("OFF_DST_MAX");
 
     NavigatorMode::parameter_handles.max_offset_rot_speed = param_find("OFF_MAX_ROT_SPD");
+    NavigatorMode::parameter_handles.min_offset_rot_period = param_find("OFF_MIN_ROT_P");
+
     NavigatorMode::parameter_handles.offset_angle_error_treshold = param_find("OFF_ANGL_ERR_T");
 
     NavigatorMode::parameter_handles.offset_rot_speed_ch_cmd_step = param_find("OFF_ROT_SPD_STP");
@@ -169,6 +172,15 @@ NavigatorMode::updateParamHandles() {
     NavigatorMode::parameter_handles.offset_initial_distance = param_find("OFF_INTL_DST");
 
     NavigatorMode::parameter_handles.follow_talt_offs = param_find("FOL_TALT_OFF");
+
+    NavigatorMode::parameter_handles.son_min= param_find("SENS_SON_MIN");
+    NavigatorMode::parameter_handles.minimal_allowed_altitude= param_find("NAV_MIN_ALT");
+    NavigatorMode::parameter_handles.range_driver_min= param_find("SENS_RANGE_MIN");
+    NavigatorMode::parameter_handles.range_driver_max= param_find("SENS_RANGE_MAX");
+    
+    NavigatorMode::parameter_handles.off_min_speed_to_rotate = param_find("OFF_MIN_SPD_ROT");
+    NavigatorMode::parameter_handles.use_altitude_correlation = param_find("NAV_USE_ALT_COR");
+
 
 }
 
@@ -232,6 +244,8 @@ NavigatorMode::updateParamValues() {
     param_get(NavigatorMode::parameter_handles.offset_max_distance,&(NavigatorMode::parameters.offset_max_distance));
 
     param_get(NavigatorMode::parameter_handles.max_offset_rot_speed,&(NavigatorMode::parameters.max_offset_rot_speed));
+    param_get(NavigatorMode::parameter_handles.min_offset_rot_period,&(NavigatorMode::parameters.min_offset_rot_period));
+
     param_get(NavigatorMode::parameter_handles.offset_angle_error_treshold,&(NavigatorMode::parameters.offset_angle_error_treshold));
 
     param_get(NavigatorMode::parameter_handles.offset_rot_speed_ch_cmd_step,&(NavigatorMode::parameters.offset_rot_speed_ch_cmd_step));
@@ -245,6 +259,13 @@ NavigatorMode::updateParamValues() {
 
     param_get(NavigatorMode::parameter_handles.follow_talt_offs, &(NavigatorMode::parameters.follow_talt_offs));
 
+    param_get(NavigatorMode::parameter_handles.son_min, &(NavigatorMode::parameters.son_min));
+    param_get(NavigatorMode::parameter_handles.minimal_allowed_altitude, &(NavigatorMode::parameters.minimal_allowed_altitude));
+    param_get(NavigatorMode::parameter_handles.range_driver_min, &(NavigatorMode::parameters.range_driver_min));
+    param_get(NavigatorMode::parameter_handles.range_driver_max, &(NavigatorMode::parameters.range_driver_max));
+
+    param_get(NavigatorMode::parameter_handles.off_min_speed_to_rotate, &(NavigatorMode::parameters.off_min_speed_to_rotate));
+    param_get(NavigatorMode::parameter_handles.use_altitude_correlation , &(NavigatorMode::parameters.use_altitude_correlation));
 }
 
 
@@ -314,6 +335,27 @@ NavigatorMode::update_vehicle_command()
 void
 NavigatorMode::execute_vehicle_command()
 {
+}
+
+void
+NavigatorMode::update_range_finder_alt()
+{
+    if (parameters.use_altitude_correlation)
+    {
+        float son_min = NavigatorMode::desired_alt_above_ground - 1.0f;
+
+        if (son_min > parameters.range_driver_max)
+            son_min = parameters.range_driver_max;
+
+        if (son_min < parameters.minimal_allowed_altitude)
+            son_min = parameters.minimal_allowed_altitude;
+
+        if (parameters.son_min != son_min)
+        {
+            parameters.son_min = son_min;
+            param_set(parameter_handles.son_min, &parameters.son_min);
+        }
+    }
 }
 
 void

@@ -23,6 +23,12 @@ PARAM_DEFINE_FLOAT(OFF_DST_MAX, 50.0f);
 PARAM_DEFINE_FLOAT(OFF_MAX_ROT_SPD, 8.0f);
 
 /**
+ * Maximum offset rotation period
+ * @unit s
+ */
+PARAM_DEFINE_FLOAT(OFF_MIN_ROT_P, 10.0f);
+
+/**
  * Offset angle error treshold. 
  * In FRONT FOLLOW angle error will have to 
  * exceed OFF_ANGLE_ERR_T to change following angle.
@@ -59,3 +65,8 @@ PARAM_DEFINE_FLOAT(OFF_MAX_SP_ANG_D, 2.0f);
  * @unit m
  */
 PARAM_DEFINE_FLOAT(OFF_INTL_DST, 8.0f);
+
+/*
+ * Minimum target speed to rotate offset automatically
+ */
+PARAM_DEFINE_FLOAT(OFF_MIN_SPD_ROT, 1.0f);

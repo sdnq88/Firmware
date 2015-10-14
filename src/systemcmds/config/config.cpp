@@ -262,6 +262,12 @@ do_mag(int argc, char *argv[])
 			if (ret) {
 				warnx("mag built-in calibration failed!");
 			}
+		} else if (argc == 2 && !strcmp(argv[0], "override")) {
+			ret = ioctl(fd, MAGIOCEXOVERRIDE, strtoul(argv[1], NULL, 0));
+
+			if (ret) {
+				warnx("mag excitement override failed!");
+			}
 		} else {
 
 			errx(1, "wrong or no arguments given. Try: \n\n\t'check' for the self test\n\t");

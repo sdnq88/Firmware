@@ -41,14 +41,17 @@ Calibrate::Calibrate(CalibrationDevice device, int returnEntry, int returnParam)
             break;
 
         case CalibrationDevice::AIRDOG_ACCEL:
+            DisplayHelper::showInfo(INFO_CALIBRATING_AIRDOG, 0);
             sendAirDogCommnad(VEHICLE_CMD_PREFLIGHT_CALIBRATION, 0, 0, 0, 0, 1);
             break;
 
         case CalibrationDevice::AIRDOG_GYRO:
+            DisplayHelper::showInfo(INFO_CALIBRATING_AIRDOG, 0);
             sendAirDogCommnad(VEHICLE_CMD_PREFLIGHT_CALIBRATION, 1);
             break;
 
         case CalibrationDevice::AIRDOG_MAGNETOMETER:
+            DisplayHelper::showInfo(INFO_CALIBRATING_AIRDOG, 0);
             sendAirDogCommnad(VEHICLE_CMD_PREFLIGHT_CALIBRATION, 0, 1);
             break;
 
@@ -59,11 +62,13 @@ Calibrate::Calibrate(CalibrationDevice device, int returnEntry, int returnParam)
 
 int Calibrate::getTimeout()
 {
-    return -1;
+    return Error::getTimeout();
 }
 
 void Calibrate::listenForEvents(bool awaitMask[])
 {
+    Error::listenForEvents(awaitMask);
+
     awaitMask[FD_KbdHandler] = 1;
     awaitMask[FD_Calibrator] = 1;
 }
@@ -72,7 +77,15 @@ Base* Calibrate::doEvent(int orbId)
 {
     Base *nextMode = nullptr;
 
-    if (orbId == FD_KbdHandler)
+    Error::doEvent(orbId);
+
+    if (!isErrorShowed && lastErrorTime != 0)
+    {
+        // error screen is closed
+        // go back
+        nextMode = new Menu(returnEntry, returnParam);
+    }
+    else if (orbId == FD_KbdHandler)
     {
         if (key_pressed(BTN_BACK))
         {

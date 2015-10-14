@@ -320,7 +320,7 @@ usage(const char name[], bool is_mobile)
 	fprintf(stderr, "\t%s start TTY\n", name);
 	fprintf(stderr, "\t%s stop\n", name);
 	fprintf(stderr, "\t%s status\n", name);
-	if (not is_mobile)
+	if (is_mobile)
 	{
 		fprintf(stderr, "\t%s mode at|default\n", name);
 		fprintf(stderr, "\t%s at TTY command [command...]\n", name);

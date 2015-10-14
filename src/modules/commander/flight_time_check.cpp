@@ -71,8 +71,13 @@ commander_error_code Flight_time_check::Takeoff_init() {
         takeoff_tilt_min_cos             = cos(takeoff_tilt_max_rad);
     }
     
+    uint32_t takeoff_additional_time;
     if ( !Utils::Get_param(takeoff_need_z_diff,               takeoff_alt_m_param,  FTC_TALT_M_MIN,  FTC_TALT_M_MAX)  ) return FTC_ERROR;
     if ( !Utils::Get_param(takeoff_time_to_achieve_z_diff_ms, takeoff_alt_ms_param, FTC_TALT_MS_MIN, FTC_TALT_MS_MAX) ) return FTC_ERROR;
+    if ( !Utils::Get_param<uint32_t>(takeoff_additional_time,           "MPC_TAKEOFF_WARM",   0,               -1)              ) return FTC_ERROR;
+    takeoff_time_to_achieve_z_diff_ms += takeoff_additional_time / 1000;
+    if ( !Utils::Get_param<uint32_t>(takeoff_additional_time,           "MPC_TAKEOFF_GRAD",   0,               -1)              ) return FTC_ERROR;
+    takeoff_time_to_achieve_z_diff_ms += takeoff_additional_time / 1000;
     
     {
         if ( !local_pos_orb.Read() ) return FTC_ERROR;

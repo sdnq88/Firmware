@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 
+#include "../bluetoothhelper.h"
 #include "../datamanager.h"
 #include "../button_handler.h"
 #include "../displayhelper.h"
@@ -14,17 +15,12 @@
 
 #include <commander/commander_error.h>
 
-#define _BLUETOOTH21_BASE       0x2d00
-
-#define PAIRING_ON          _IOC(_BLUETOOTH21_BASE, 0)
-#define PAIRING_OFF         _IOC(_BLUETOOTH21_BASE, 1)
-
-
 namespace modes
 {
 
 ModeConnect::ModeConnect(State Current) : 
     forcing_pairing(false),
+    wasPairing(false),
     startTime(0)
 {
     if (Current == State::UNKNOWN)
@@ -56,6 +52,9 @@ void ModeConnect::listenForEvents(bool awaitMask[])
 
         case State::CHECK_MAVLINK:
             awaitMask[FD_MavlinkStatus] = 1;
+            break;
+
+        default:
             break;
     }
 
@@ -95,13 +94,12 @@ Base* ModeConnect::doEvent(int orbId)
                     break;
                 case State::PAIRING:
                     DOG_PRINT("[modes]{connection} stop pairing!\n");
-                    BTPairing(false);
+                    BluetoothHelper::pairing(false);
                     break;
                 default:
                     DOG_PRINT("[modes]{connection} menu button not handled for this state:%d\n"
                             ,currentState);
                     break;
-
             }
         }
         else if (key_pressed(BTN_OK) && currentState == State::NOT_PAIRED)
@@ -200,20 +198,6 @@ void ModeConnect::getConState()
     }
 }
 
-void ModeConnect::BTPairing(bool start)
-{
-    int fd = open("/dev/btctl", 0);
-
-    if (fd > 0) {
-        if (start)
-            ioctl(fd, PAIRING_ON, 0);
-        else
-            ioctl(fd, PAIRING_OFF, 0);
-    }
-
-    close(fd);
-}
-
 void ModeConnect::setState(State state)
 {
     currentState = state;
@@ -221,16 +205,19 @@ void ModeConnect::setState(State state)
     switch (currentState)
     {
         case State::NOT_PAIRED:
+            wasPairing = false;
             DisplayHelper::showInfo(INFO_NOT_PAIRED);
             break;
 
         case State::PAIRING:
+            wasPairing = true;
             forcing_pairing = true;
-            BTPairing();
+            BluetoothHelper::pairing();
             DisplayHelper::showInfo(INFO_PAIRING);
             break;
 
         case State::DISCONNECTED:
+            wasPairing = false;
             DisplayHelper::showInfo(INFO_CONNECTION_LOST);
             break;
 
@@ -240,7 +227,15 @@ void ModeConnect::setState(State state)
 
         case State::CHECK_MAVLINK:
             time(&startTime);
-            DisplayHelper::showInfo(INFO_ESTABLISHING_CONNECTION);
+            if (wasPairing)
+            {
+                DisplayHelper::showInfo(INFO_PAIRING_OK);
+            }
+            else
+            {
+                DisplayHelper::showInfo(INFO_ESTABLISHING_CONNECTION);
+            }
+            wasPairing = false;
             break;
 
         case State::GETTING_ACTIVITIES:
@@ -249,6 +244,7 @@ void ModeConnect::setState(State state)
             break;
 
         default:
+            wasPairing = false;
             DisplayHelper::showInfo(INFO_FAILED);
             break;
     }

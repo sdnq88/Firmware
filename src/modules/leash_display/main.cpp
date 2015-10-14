@@ -112,6 +112,12 @@ static int leash_display_thread_main(int argc, char *argv[])
                     Screen::showLogo();
                     break;
 
+                case LEASHDISPLAY_TEST:
+                    dm.clearAwaitMask();
+                    dm.awaitMask[FD_LeashDisplay] = true;
+                    Screen::showTest();
+                    break;
+
                 case LEASHDISPLAY_MAIN:
                     dm.clearAwaitMask();
                     dm.awaitMask[FD_LeashDisplay] = true;
@@ -164,6 +170,10 @@ static int leash_display_thread_main(int argc, char *argv[])
 
                 case LEASHDISPLAY_LOGO:
                     Screen::showLogo();
+                    break;
+
+                case LEASHDISPLAY_TEST:
+                    Screen::showTest();
                     break;
 
                 case LEASHDISPLAY_MAIN:

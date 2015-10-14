@@ -16,6 +16,7 @@
 #include <ctime>
 
 #include <activity/activity_change_manager.hpp>
+#include <activity/activity_files.h>
 #include <activity/activity_files.hpp>
 #include <activity/activity_lib_constants.h>
 
@@ -43,9 +44,11 @@ usage()
 
 #define _BLUETOOTH21_BASE       0x2d00
 
-#define PAIRING_ON          _IOC(_BLUETOOTH21_BASE, 0)
-#define PAIRING_OFF         _IOC(_BLUETOOTH21_BASE, 1)
-#define PAIRING_TOGGLE      _IOC(_BLUETOOTH21_BASE, 2)
+#define PAIRING_ON			 _IOC(_BLUETOOTH21_BASE, 0)
+#define PAIRING_OFF			 _IOC(_BLUETOOTH21_BASE, 1)
+#define PAIRING_TOGGLE		 _IOC(_BLUETOOTH21_BASE, 2)
+#define DROP_ALL_CONNECTIONS _IOC(_BLUETOOTH21_BASE, 3)
+#define RESET_MODULE         _IOC(_BLUETOOTH21_BASE, 4)
 
 static int _bt_sub = -1;
 static struct bt_state_s _bt_state;
@@ -114,12 +117,37 @@ void pairing_toggle() {
 
 }
 
+void drop_all_bt_connections(){
+
+    int fd = open("/dev/btctl", 0);
+
+    if (fd > 0) {
+        ioctl(fd, DROP_ALL_CONNECTIONS, 0);
+    }
+
+    close(fd);
+
+}
+
+
+void reset_bt_module(){
+
+    int fd = open("/dev/btctl", 0);
+
+    if (fd > 0) {
+        ioctl(fd, RESET_MODULE, 0);
+    }
+    close(fd);
+
+}
+
 bool test_activity_manager();
 bool init_receive_fake_activity_params();
 bool modify_receive_fake_activity_params();
 bool print_activity_params_orb_content();
 bool fill_activity_files();
 bool send_switch_activity(int activity);
+void test_activity_factory_reset();
 
 void sendAirDogCommnad(enum VEHICLE_CMD command, float param1, float param2, float param3, float param4, double param5, double param6, float param7);
 
@@ -151,7 +179,11 @@ main(int argc, char const * const * argv)
         } else {
             usage();
         }
-    
+    }
+    else if (streq(argv[1], "drop_bt_connections")) {
+        drop_all_bt_connections();
+    } else if (streq(argv[1], "reset_bt_module")){
+        reset_bt_module();
     } else if (streq(argv[1], "activity")) {
 
         if (streq(argv[2], "test")) {
@@ -178,9 +210,7 @@ main(int argc, char const * const * argv)
             Activity::Files::update_activity(1,0);
         } else if (streq(argv[2], "clear_file_state")) {
             Activity::Files::clear_file_state();
-        } else if (streq(argv[2], "send_orb")) {
-        }
-        else if (streq(argv[2], "switch_cmd")){
+        } else if (streq(argv[2], "switch_cmd")){
             if (argc == 4)
             {
                 const int activity = atoi(argv[3]);
@@ -188,11 +218,13 @@ main(int argc, char const * const * argv)
             } else {
                 send_switch_activity(2);
             }
-
-        } else {
+        } else if (streq(argv[2], "factory_reset")){
+            test_activity_factory_reset();
+        } 
+        else 
+        {
             usage();
         }
-    
     } else {
         usage();
     }
@@ -426,4 +458,8 @@ void sendAirDogCommnad(enum VEHICLE_CMD command,
     {
         to_vehicle_command = orb_advertise(ORB_ID(vehicle_command), &vehicle_command);
     }
+}
+
+void test_activity_factory_reset(){
+    activity_factory_reset();
 }

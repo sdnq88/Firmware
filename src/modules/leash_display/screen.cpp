@@ -96,6 +96,13 @@ void Screen::showLogo()
     blockLogo.draw();
 }
 
+void Screen::showTest()
+{
+    BitmapBlock blockLogo(0, 0, IMAGE_SCREENS_LOGO);
+    blockLogo.draw();
+    display_draw_rectangle(0, 0, 127, 63);
+}
+
 void Screen::showMain(int mode, const char *presetName, int leashBattery, int airdogBattery,
                       int airdogMode, int followMode, int landMode,
                       int leashGPS, int airdogGPS)
@@ -449,6 +456,11 @@ void Screen::showMenu(int buttons, int type, int value, const char *presetName, 
             text = "AirDog calib";
             break;
 
+        case MENUTYPE_SENSOR_CHECK:
+            imageId = IMAGE_SCREENS_ICONS_SETTINGS;
+            text = "Sensor check";
+            break;
+
         case MENUTYPE_COMPASS:
             imageId = IMAGE_SCREENS_ICONS_COMPASS;
             text = "Compass";
@@ -621,9 +633,8 @@ void Screen::showInfo(int info, int error, int leashBattery)
     const int rowCount = 4;
     struct TextInfo text[rowCount];
     const char *title = nullptr;
-    char buffer2[20]; // buffer for error title
-    char buffer[60]; // buffer for error message
-
+    char buffer[60]; // text buffer
+    char buffer2[30]; // text buffer
 
     memset(text, 0, sizeof(text));
 
@@ -693,12 +704,10 @@ void Screen::showInfo(int info, int error, int leashBattery)
             break;
 
         case INFO_CALIBRATING_AIRDOG:
-            text[0].text = "Calibrate";
-            text[0].font = &Font::LucideGrandeMed;
+            text[0].text = "Calibrating";
+            text[0].font = &Font::LucideGrandeSmall;
             text[1].text = "AirDog";
             text[1].font = &Font::LucideGrandeSmall;
-            text[2].text = "Press OK";
-            text[2].font = &Font::LucideGrandeSmall;
             break;
 
         case INFO_PAIRING:
@@ -708,6 +717,17 @@ void Screen::showInfo(int info, int error, int leashBattery)
             text[1].font = &Font::LucideGrandeTiny;
             text[2].text = "button on AirDog";
             text[2].font = &Font::LucideGrandeTiny;
+            break;
+
+        case INFO_PAIRING_OK:
+            text[0].text = "Pairing done";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "Now it is safe to";
+            text[1].font = &Font::LucideGrandeTiny;
+            text[2].text = "turn off pairing";
+            text[2].font = &Font::LucideGrandeTiny;
+            text[3].text = "on AirDog";
+            text[3].font = &Font::LucideGrandeTiny;
             break;
 
         case INFO_NOT_PAIRED:
@@ -772,6 +792,94 @@ void Screen::showInfo(int info, int error, int leashBattery)
             text[1].text = "sure?";
             text[1].font = &Font::LucideGrandeMed;
             text[2].text = "Menu to cancel";
+            text[2].font = &Font::LucideGrandeTiny;
+            break;
+
+        case INFO_SENSOR_VALIDATION_REQUIRED:
+            text[0].text = "Sensor check";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "required";
+            text[1].font = &Font::LucideGrandeSmall;
+            text[2].text = "press ok";
+            text[2].font = &Font::LucideGrandeTiny;
+            break;
+
+        case INFO_SENSOR_VALIDATION_SHOW_STATUS:
+        {
+            const char *s = nullptr;
+            bool calibrate = true;
+
+            text[0].text = "Sensor check";
+            text[0].font = &Font::LucideGrandeSmall;
+
+            if ((0xF & error) == 1)
+            {
+                s = "ok";
+            }
+            else if ((0xF & error) == 2)
+            {
+                s = "failed";
+            }
+            else
+            {
+                calibrate = false;
+                s = "wait";
+            }
+            snprintf(buffer, sizeof(buffer), "AirLeash: %s", s);
+            text[1].text = buffer;
+            text[1].font = &Font::LucideGrandeSmall;
+
+            if ((error >> 4) == 1)
+            {
+                s = "ok";
+            }
+            else if ((error >> 4) == 2)
+            {
+                s = "failed";
+            }
+            else
+            {
+                calibrate = false;
+                s = "wait";
+            }
+            snprintf(buffer2, sizeof(buffer2), "AirDog: %s", s);
+
+            text[2].text = buffer2;
+            text[2].font = &Font::LucideGrandeSmall;
+
+            if (calibrate)
+            {
+                text[3].text = "Please calibrate";
+                text[3].font = &Font::LucideGrandeTiny;
+            }
+            break;
+        }
+
+        case INFO_SENSOR_VALIDATION_OK_TO_START:
+            text[0].text = "Put AirLeash";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "on your AirDog";
+            text[1].font = &Font::LucideGrandeSmall;
+            text[2].text = "and press OK";
+            text[2].font = &Font::LucideGrandeSmall;
+            break;
+
+        case INFO_SENSOR_VALIDATION_COUNTDOWN:
+            text[0].text = "Sensor check";
+            text[0].font = &Font::LucideGrandeSmall;
+            text[1].text = "starting in";
+            text[1].font = &Font::LucideGrandeSmall;
+            snprintf(buffer, sizeof(buffer), "%d second%s", error, error > 0 ? "s" : "");
+            text[2].text = buffer;
+            text[2].font = &Font::LucideGrandeSmall;
+            break;
+
+        case INFO_REBOOT:
+            text[0].text = "Rebooting";
+            text[0].font = &Font::LucideGrandeMed;
+            text[1].text = error == 0 ? "AirLeash" : "AirDog";
+            text[1].font = &Font::LucideGrandeMed;
+            text[2].text = "please wait";
             text[2].font = &Font::LucideGrandeTiny;
             break;
 

@@ -27,8 +27,10 @@ struct AllowedParam {
 
     const char * units;
 
+    int8_t visible_if_afol_mode;    
+
     AllowedParam();
-    AllowedParam(int _id, const char * _name, param_target_device _target_device, const char * _units, const char * _display_name, const char * const * _display_values); 
+    AllowedParam(int _id, const char * _name, param_target_device _target_device, const char * _units, const char * _display_name, int8_t _visible_if_afol_mode, const char * const * _display_values); 
 
 };
 

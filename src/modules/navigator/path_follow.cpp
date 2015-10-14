@@ -71,6 +71,8 @@ void PathFollow::on_inactive() {
 
 void PathFollow::on_activation() {
 
+    local_pos = _navigator->get_local_position();
+
     _start_time = hrt_absolute_time();
 
     _vstatus = _navigator->get_vstatus();
@@ -111,6 +113,9 @@ void PathFollow::on_activation() {
     _z_start = _drone_local_pos.z - _vertical_offset;
     _y_start = _drone_local_pos.y;
     _x_start = _drone_local_pos.x;
+
+    NavigatorMode::desired_alt_above_ground = ( -_vertical_offset ) + NavigatorMode::parameters.follow_talt_offs;
+    update_range_finder_alt();
 
 	if (!_inited) {
 		mavlink_log_critical(_mavlink_fd, "Follow Path mode wasn't initialized! Aborting...");
@@ -308,11 +313,22 @@ void PathFollow::execute_vehicle_command() {
 				break;
 			}
 			case REMOTE_CMD_DOWN: {
-				_vertical_offset += NavigatorMode::parameters.down_button_step;
+
+                float down_step = NavigatorMode::parameters.down_button_step;
+                float son_allowed_h = local_pos->dist_bottom - NavigatorMode::parameters.son_min;
+
+                if (!local_pos->dist_bottom_valid || (local_pos->dist_bottom_valid && son_allowed_h >= down_step)) {
+                    _vertical_offset += NavigatorMode::parameters.down_button_step;
+                }
+
                 break;
 			}
 		}
 	}
+
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::desired_alt_above_ground = ( -_vertical_offset ) + NavigatorMode::parameters.follow_talt_offs;
+    update_range_finder_alt();
 }
 
 void PathFollow::update_traj_point_queue() {

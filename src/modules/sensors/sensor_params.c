@@ -188,6 +188,15 @@ PARAM_DEFINE_FLOAT(SENS_MAG_CTEMP, -278.15f);
 PARAM_DEFINE_FLOAT(SENS_SON_FILT, 0.8f);
 
 /**
+ * Range finder sensor minimal and maximal values defined by manufacturer (or experimentally)
+ *
+ * @units meters
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_FLOAT(SENS_RANGE_MIN, 0.2f);
+PARAM_DEFINE_FLOAT(SENS_RANGE_MAX, 9.0f);
+
+/**
  * Sonar maximal accepted delta for non-spike/new level sonar measurment
  *
  * If sonar measurement delta is larger than this value it skiped (spike) or accepted as new surface level (if offset is stable).
@@ -213,7 +222,7 @@ PARAM_DEFINE_INT32(SENS_SON_ON, 1);
  * @max unlimited;    max range of sonar, but there is no real maximal boundary
  * @group Sensor Calibration
  */
-PARAM_DEFINE_FLOAT(SENS_SON_MIN, 6.0f);
+PARAM_DEFINE_FLOAT(SENS_SON_MIN, 5.0f);
 
 /**
  * Sonar coefficient to multiply sonar minimal distance by, resulting in critical distance
@@ -394,7 +403,13 @@ PARAM_DEFINE_FLOAT(SENS_BARO_QNH, 1013.25f);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(SENS_BOARD_ROT, 6);
+PARAM_DEFINE_INT32(SENS_BOARD_ROT,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		0
+#else
+		6
+#endif
+);
 
 /**
  * Board rotation Y (Pitch) offset
@@ -424,7 +439,13 @@ PARAM_DEFINE_FLOAT(SENS_BOARD_X_OFF, 0.0f);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_FLOAT(SENS_BOARD_Z_OFF, 180.0f);
+PARAM_DEFINE_FLOAT(SENS_BOARD_Z_OFF,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		0.0f
+#else
+		180.0f
+#endif
+);
 
 /**
  * External magnetometer rotation
@@ -435,7 +456,13 @@ PARAM_DEFINE_FLOAT(SENS_BOARD_Z_OFF, 180.0f);
  *
  * @group Sensor Calibration
  */
-PARAM_DEFINE_INT32(SENS_EXT_MAG_ROT, 2);
+PARAM_DEFINE_INT32(SENS_EXT_MAG_ROT,
+#ifdef CONFIG_ARCH_BOARD_AIRLEASH
+		0
+#else
+		2
+#endif
+);
 
 /**
 * Set usage of external magnetometer

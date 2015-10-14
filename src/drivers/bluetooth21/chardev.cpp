@@ -22,12 +22,13 @@
 #include "io_multiplexer_rw.hpp"
 #include "svc_settings.hpp"
 
-
 #define _BLUETOOTH21_BASE		0x2d00
 
-#define PAIRING_ON			_IOC(_BLUETOOTH21_BASE, 0)
-#define PAIRING_OFF			_IOC(_BLUETOOTH21_BASE, 1)
-#define PAIRING_TOGGLE		_IOC(_BLUETOOTH21_BASE, 2)
+#define PAIRING_ON			 _IOC(_BLUETOOTH21_BASE, 0)
+#define PAIRING_OFF			 _IOC(_BLUETOOTH21_BASE, 1)
+#define PAIRING_TOGGLE		 _IOC(_BLUETOOTH21_BASE, 2)
+#define DROP_ALL_CONNECTIONS _IOC(_BLUETOOTH21_BASE, 3)
+#define RESET_MODULE         _IOC(_BLUETOOTH21_BASE, 4)
 
 /*
  * Bluetooth character devices implementation uses struct file .priv
@@ -211,26 +212,30 @@ ioctl(FAR struct file *filp, int cmd, unsigned long arg){
 
 	switch (cmd) {
 	case PAIRING_ON:
-
         dbg("PAIRING TURNED ON");
         Globals::Service::turn_pairing_on();
-
 		break;
 
 	case PAIRING_OFF:
-
         dbg("PAIRING TURNED OFF");
         Globals::Service::turn_pairing_off();
-
 		break;
 
 	case PAIRING_TOGGLE:
-
         dbg("PAIRING TOGGLED");
         Globals::Service::toggle_pairing();
 		break;
 
+    case DROP_ALL_CONNECTIONS:
+        Globals::Service::drop_all_connections();
+        break;
+
+    case RESET_MODULE: 
+        Globals::Service::reset_module();
+        break;
+
     }
+    
 
     return r;
 }

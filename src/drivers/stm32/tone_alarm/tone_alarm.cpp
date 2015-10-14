@@ -90,7 +90,6 @@
 #include <debug.h>
 
 #include <drivers/device/device.h>
-#include <drivers/drv_tone_alarm.h>
 
 #include <sys/types.h>
 #include <stdint.h>
@@ -116,6 +115,8 @@
 #include <stm32_tim.h>
 
 #include <systemlib/err.h>
+
+#include "tone_alarm.h"
 
 /* Tone alarm configuration */
 #if   TONE_ALARM_TIMER == 2
@@ -219,6 +220,28 @@
 #define rCCR4    	REG(STM32_GTIM_CCR4_OFFSET)
 #define rDCR     	REG(STM32_GTIM_DCR_OFFSET)
 #define rDMAR    	REG(STM32_GTIM_DMAR_OFFSET)
+
+TONE_ALARM_HANDLE tone_alarm_init()
+{
+	int	fd;
+
+	fd = open(TONEALARM_DEVICE_PATH, 0);
+
+	return (TONE_ALARM_HANDLE)fd;
+}
+
+int tone_alarm_play(TONE_ALARM_HANDLE handle, int tune)
+{
+	int ret;
+	int fd = (int)handle;
+	ret = ioctl(fd, TONE_SET_ALARM, tune);
+	return ret;
+}
+
+void tone_alarm_close(TONE_ALARM_HANDLE handle)
+{
+	close((int)handle);
+}
 
 class ToneAlarm : public device::CDev
 {
@@ -327,6 +350,7 @@ ToneAlarm::ToneAlarm() :
 	//_debug_enabled = true;
 	// _default_tunes[TONE_STARTUP_TUNE] = "MFT240L8 O4aO5dc O4aO5dc O4aO5dc L16dcdcdcdc";		// startup tune
 	// _default_tunes[TONE_STARTUP_TUNE] = "MFT150L8 O3def1e4.c.O2f1";		// startup tune (Terminator style)
+	_default_tunes[TONE_DEV_STARTUP_TUNE] = "MFT200L16 O3def2e8.c.O2f2";		// development firmware startup tune hastened terminator style
 	// _default_tunes[TONE_STARTUP_TUNE] = "MFT150L8 O3bbb4bbb4bO4dO3g.a16b4O4P4ccc.c16cO3bbb16b16baaga4"; // startup tune (Christmas style)
 	_default_tunes[TONE_STARTUP_TUNE] = "MFT220L8 O2cegO3c."; // startup tune AirDog original
 	_default_tunes[TONE_ERROR_TUNE] = "MBT200a8a8a8PaaaP";						// ERROR tone
@@ -349,7 +373,10 @@ ToneAlarm::ToneAlarm() :
 	_default_tunes[TONE_PROCESSING] = "MBT200 O2a16>c16p2"; // general "processing data" tune that requires NO input from user
 
     _default_tunes[TONE_TARGET_POS_INVALID] = "MBT200a8b8a8b8P";
+    _default_tunes[TONE_LANDING1] = "MFT100O3g#4";		// TONE_LANDING
+    _default_tunes[TONE_LANDING2] = "MFT100O4d4";		// TONE_LANDING
 
+    _tune_names[TONE_DEV_STARTUP_TUNE] = "dev_startup"; // startup tune for dev firmwares
 	_tune_names[TONE_STARTUP_TUNE] = "startup";			// startup tune
 	_tune_names[TONE_ERROR_TUNE] = "error";				// ERROR tone
 	_tune_names[TONE_NOTIFY_POSITIVE_TUNE] = "positive";		// Notify Positive tone
@@ -371,6 +398,8 @@ ToneAlarm::ToneAlarm() :
 	_tune_names[TONE_PROCESSING] = "processing";		// general "processing data" tune that requires NO input from user
 
     _tune_names[TONE_TARGET_POS_INVALID] = "target_pos_invalid";
+    _tune_names[TONE_LANDING1] = "landing1";
+    _tune_names[TONE_LANDING2] = "landing2";
 }
 
 ToneAlarm::~ToneAlarm()

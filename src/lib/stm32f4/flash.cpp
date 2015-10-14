@@ -5,9 +5,27 @@
 #include "flash.hpp"
 #include "flash.h"
 
+static void changeInt32Endian(int *value)
+{
+	char t;
+	char *p = (char*)value;
+
+	t = p[0];
+	p[0] = p[3];
+	p[3] = t;
+
+	t = p[1];
+	p[1] = p[2];
+	p[2] = t;
+}
+
 void flash_getSerial(unsigned char serial[12])
 {
 	memcpy(serial, &stm32f42::flash::mcu_udid, sizeof(stm32f42::flash::mcu_udid));
+	// change endian
+	changeInt32Endian((int*)serial);
+	changeInt32Endian((int*)serial + 1);
+	changeInt32Endian((int*)serial + 2);
 }
 
 namespace stm32f4_23

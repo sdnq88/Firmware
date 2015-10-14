@@ -308,3 +308,5 @@ ORB_DEFINE(activity_request, struct activity_request_s);
 ORB_DEFINE(activity_remote_t, struct activity_remote_t_s);
 ORB_DEFINE(activity_received_t, struct activity_received_t_s);
 
+#include "topics/sensor_status.h"
+ORB_DEFINE(sensor_status, sensor_status_s);

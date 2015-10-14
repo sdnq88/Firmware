@@ -48,6 +48,11 @@ then
 	param set NAV_ACCEPT_RAD 2.0
 fi
 
+#
+# Remark:
+#
+#    Release PWM settings are in ROMFS/release/AirDogFMU/init.d/rc.interface.
+#
 set PWM_RATE 400
 set PWM_DISARMED 910
 set PWM_MIN 1075

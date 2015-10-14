@@ -316,6 +316,16 @@ synced_loop(MultiPlexer & mp, ServiceIO & service_io, ServiceState & svc)
 			svc.conn.changed = false;
 		}
 
+        if (Globals::Service::drop_all_connections_flag) {
+            if (Service::Laird::drop_all_connections(service_io, svc.conn))
+                Globals::Service::drop_all_connections_done();
+        }
+
+        if (Globals::Service::reset_module_flag) {
+            if (soft_reset(service_io)) 
+                Globals::Service::reset_module_done();
+        }
+
         if (count_connections(svc.conn) > 0) {
 
             svc.global_state = GLOBAL_BT_STATE::CONNECTED;

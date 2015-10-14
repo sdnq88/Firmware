@@ -30,6 +30,7 @@ private:
 
     bool forcing_pairing;
 
+    bool wasPairing;
     State currentState;
 
     time_t startTime;
@@ -37,7 +38,6 @@ private:
     // == methods ==
     void getConState();
     bool receiveActivityParams();
-    void BTPairing(bool start = 1);
     void setState(State state);
 };
 

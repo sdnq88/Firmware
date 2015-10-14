@@ -75,7 +75,7 @@ private:
 
     void offset_height_step(int);
     void offset_distance_step(int);
-    void offset_rotation_step(int, float&);
+    void offset_rotation_step(int, float&, float);
 
     void calc_actual_angle();
     void normalize_angle(float &angle);
@@ -114,6 +114,8 @@ private:
     bool _base_offset_inited;
 
     float _front_follow_additional_angle;
+
+    float _start_offset;
 
 };
 

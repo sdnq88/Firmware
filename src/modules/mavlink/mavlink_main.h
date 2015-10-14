@@ -51,15 +51,12 @@
 
 #include <uORB/uORB.h>
 #include <uORB/topics/mavlink_stats.h>
-#include <uORB/topics/mission.h>
-#include <uORB/topics/mission_result.h>
 #include <uORB/topics/telemetry_status.h>
 
 #include "mavlink_bridge_header.h"
 #include "mavlink_orb_subscription.h"
 #include "mavlink_stream.h"
 #include "mavlink_messages.h"
-#include "mavlink_mission.h"
 #include "mavlink_parameters.h"
 #include "mavlink_defines.h"
 
@@ -305,7 +302,6 @@ private:
 	MavlinkOrbSubscription	*_subscriptions;
 	MavlinkStream		*_streams;
 
-	MavlinkMissionManager	*_mission_manager;
 	MavlinkParametersManager *_parameters_manager;
 
 	MAVLINK_MODE 		_mode;

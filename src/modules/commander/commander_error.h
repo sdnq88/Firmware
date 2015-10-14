@@ -33,6 +33,8 @@ enum commander_error_code
     BSC_ERROR_BATTERY_LAND_NOTIFY          = 35,
     BSC_ERROR_BATTERY_LAND                 = 36,
     BSC_ERROR_BATTERY_LAND_DEATH           = 37,
+
+    CMD_PREFLIGHT_CALIBRATION_ERROR = 100,
 };
 
 __EXPORT int commander_set_error(int error_code);

@@ -45,6 +45,16 @@
 #include <nuttx/config.h>
 #include <systemlib/param/param.h>
 
+/*
+ * Overall flying time and flight counts for the drone
+ *
+ * units seconds
+ * SHOULD NOT BE MANUALLY MODIFIED
+ */
+PARAM_DEFINE_INT32(A_ABS_FLY_TIME, 0);
+PARAM_DEFINE_INT32(A_ABS_FLY_COUNT, 0);
+
+
 PARAM_DEFINE_FLOAT(TRIM_ROLL, 0.0f);
 PARAM_DEFINE_FLOAT(TRIM_PITCH, 0.0f);
 PARAM_DEFINE_FLOAT(TRIM_YAW, 0.0f);
@@ -84,7 +94,7 @@ PARAM_DEFINE_FLOAT(BAT_V_LOAD_DROP, 0.07f);
  *
  * @group Battery Calibration
  */
-PARAM_DEFINE_INT32(BAT_N_CELLS, 
+PARAM_DEFINE_INT32(BAT_N_CELLS,
 #ifdef CONFIG_ARCH_BOARD_AIRLEASH
 		3
 #else
@@ -99,7 +109,7 @@ PARAM_DEFINE_INT32(BAT_N_CELLS,
  *
  * @group Battery Calibration
  */
-PARAM_DEFINE_FLOAT(BAT_CAPACITY, 
+PARAM_DEFINE_FLOAT(BAT_CAPACITY,
 #ifdef CONFIG_ARCH_BOARD_AIRLEASH
 		-1.0f
 #else
@@ -312,7 +322,7 @@ PARAM_DEFINE_INT32(A_ACTIVITY, 0);
 PARAM_DEFINE_INT32(A_ACTIVITY_ON, 1);
 
 /**
- * Activity manager in god mode. 
+ * Activity manager in god mode.
  * @group airdog
  */
 PARAM_DEFINE_INT32(A_ACTIVITY_GOD, 0);

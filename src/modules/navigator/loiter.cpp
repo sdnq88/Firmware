@@ -87,6 +87,10 @@ Loiter::on_inactive()
 void
 Loiter::on_activation()
 {
+
+	target_pos = _navigator->get_target_position();
+	global_pos = _navigator->get_global_position();
+
 	updateParameters();
 
 	//Ignore all commands received from target so far
@@ -166,6 +170,12 @@ Loiter::on_activation()
     }
 
     _navigator->invalidate_setpoint_triplet();
+
+    float target_alt_delta = target_pos->alt -  _navigator -> get_target_start_alt();
+    float ground_alt = _navigator->get_drone_start_alt() + target_alt_delta; 
+
+    NavigatorMode::desired_alt_above_ground= global_pos->alt - ground_alt;
+    NavigatorMode::update_range_finder_alt();
 
     if (vstatus->auto_takeoff_cmd) {
         bool preflight_motor_check_not_needed_or_success = true;
@@ -292,6 +302,13 @@ Loiter::execute_vehicle_command()
 			execute_command_in_taking_off(cmd);
 			break;
 	}
+
+    float target_alt_delta = target_pos->alt -  _navigator -> get_target_start_alt();
+
+    float ground_alt = _navigator->get_drone_start_alt() + target_alt_delta; 
+
+    NavigatorMode::desired_alt_above_ground = pos_sp_triplet->current.alt - ground_alt;
+    update_range_finder_alt();
 
 }
 
@@ -685,39 +702,40 @@ Loiter::execute_command_in_taking_off(vehicle_command_s cmd) {
 
 void
 Loiter::start_follow() {
+
+    
+    commander_request_s *commander_request = _navigator->get_commander_request();
+    commander_request->request_type = MAIN_AIRD_STATE_CHANGE;
+    commander_request->airdog_state = AIRD_STATE_IN_AIR;
+
+    _navigator->set_commander_request_updated();
+
 	if (NavigatorMode::parameters.afol_mode == 0) {
 
-    	commander_request_s *commander_request = _navigator->get_commander_request();
-		commander_request->request_type = V_MAIN_STATE_CHANGE;
 		commander_request->main_state = MAIN_STATE_ABS_FOLLOW;
 		_navigator->set_commander_request_updated();
 
     } else if (NavigatorMode::parameters.afol_mode == 1) {
 
-        commander_request_s *commander_request = _navigator->get_commander_request();
-        commander_request->request_type = V_MAIN_STATE_CHANGE;
         commander_request->main_state = MAIN_STATE_AUTO_PATH_FOLLOW;
-
         _navigator->set_flag_reset_pfol_offs(true);
-
         _navigator->set_commander_request_updated();
 
     } else if (NavigatorMode::parameters.afol_mode == 2) {
-        commander_request_s *commander_request = _navigator->get_commander_request();
-        commander_request->request_type = V_MAIN_STATE_CHANGE;
+
         commander_request->main_state = MAIN_STATE_CABLE_PARK;
         _navigator->set_commander_request_updated();
+
     } else if (NavigatorMode::parameters.afol_mode == 3) {
-        commander_request_s *commander_request = _navigator->get_commander_request();
-        commander_request->request_type = V_MAIN_STATE_CHANGE;
+
         commander_request->main_state = MAIN_STATE_FRONT_FOLLOW;
         _navigator->set_commander_request_updated();
 
     } else if (NavigatorMode::parameters.afol_mode == 4) {
-        commander_request_s *commander_request = _navigator->get_commander_request();
-        commander_request->request_type = V_MAIN_STATE_CHANGE;
+
         commander_request->main_state = MAIN_STATE_CIRCLE_AROUND;
         _navigator->set_commander_request_updated();
+
     } else if (NavigatorMode::parameters.afol_mode == 5) {
         // Do nothing! Reserved for "Hover aim and shoot", so stay in Loiter
     }

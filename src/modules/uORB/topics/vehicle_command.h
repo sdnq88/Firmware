@@ -100,6 +100,8 @@ enum VEHICLE_CMD {
 	VEHICLE_CMD_START_RX_PAIR = 500, /* Starts receiver pairing |0:Spektrum| 0:Spektrum DSM2, 1:Spektrum DSMX|  */
 	VEHICLE_CMD_PAYLOAD_PREPARE_DEPLOY = 30001, /**< Prepare a payload deployment in the flight plan */
 	VEHICLE_CMD_PAYLOAD_CONTROL_DEPLOY = 30002, /**< Control a pre-programmed payload deployment */
+	/**< Values starting from 40001 are free to use for custom dialects */
+	VEHICLE_CMD_PERFORM_SENSOR_VALIDATION = 40001, /**< Requests the device to perform sensor validation */
 	VEHICLE_CMD_ENUM_END = 50001, /*  | */
 };
 

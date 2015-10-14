@@ -68,6 +68,7 @@
 #include "stm32_gpio.h"
 #include "stm32_tim.h"
 #include <systemlib/err.h>
+#include <systemlib/param/param.h>
 
 #include <uORB/uORB.h>
 #include <uORB/topics/pwm_input.h>
@@ -310,9 +311,20 @@ PWMIN::init()
 	// activate the timer when requested to when the device is opened
 	CDev::init();
 
+    float param_minimal_distance = MINIMAL_DISTANCE * 1e-3f;
+    float param_maximal_distance = MAXIMAL_DISTANCE * 1e-3f;
+    if (param_get(param_find("SENS_RANGE_MIN"), &param_minimal_distance))
+    {
+        fprintf(stderr, "ERROR! SENS_RANGE_MIN not read, setting lidar minimum to predefined value.\n");
+    }
+    if (param_get(param_find("SENS_RANGE_MAX"), &param_maximal_distance))
+    {
+        fprintf(stderr, "ERRORR! SENS_RANGE_MAX not read, setting lidar maximum to predefined value.\n");
+    }
+
     data.type = RANGE_FINDER_TYPE_LASER;
-    data.minimum_distance = MINIMAL_DISTANCE * 1e-3f;
-    data.maximum_distance = MAXIMAL_DISTANCE * 1e-3f;
+    data.minimum_distance = param_minimal_distance;
+    data.maximum_distance = param_maximal_distance;
 
     range_finder_pub = orb_advertise(ORB_ID(sensor_range_finder), &data);
     DOG_PRINT("[pwm_input] advertising %d\n"

@@ -179,6 +179,7 @@ private:
 	orb_advert_t _rc_pub;
 	orb_advert_t _manual_pub;
 	orb_advert_t _target_pos_pub;
+	struct target_global_position_s _target_pos;
 	orb_advert_t _external_trajectory_pub;
 	orb_advert_t _activity_params_pub;
     orb_advert_t _activity_request_pub;

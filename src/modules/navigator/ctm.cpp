@@ -78,6 +78,11 @@ CTM::on_activation()
 	set_camera_mode(HORIZONTAL, true);
 	set_ctm_setpoint();
 
+    float ground_alt = global_pos->alt - target_alt_delta;
+
+    NavigatorMode::desired_alt_above_ground= global_pos->alt - ground_alt;
+    NavigatorMode::update_range_finder_alt();
+
 }
 
 void
@@ -92,7 +97,9 @@ CTM::on_active()
 			set_next_ctm_state();
 			set_ctm_setpoint();
 		}
+
 	}
+
 }
 
 void
@@ -113,6 +120,9 @@ CTM::execute_vehicle_command()
 
 		}
 	}
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::desired_alt_above_ground = 0;
+    update_range_finder_alt();
 }
 
 void

@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 from PIL import Image, ImageDraw, ImageFont
 import sys
 import numpy
@@ -58,6 +60,7 @@ def generateFont(fontPath, fontSize, imagePath):
         drawText(" ", fnt, fontSize, outpath + "space" + ".png")
         drawText(".", fnt, fontSize, outpath + "dot" + ".png")
         drawText("?", fnt, fontSize, outpath + "question" + ".png")
+        drawText(":", fnt, fontSize, outpath + "colon" + ".png")
 
 	print fontPath + " " + str(fontSize) + " is done"
 

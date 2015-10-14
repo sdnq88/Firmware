@@ -56,50 +56,50 @@ static int taskParameterMavlinkFd = 0;
 
 static int start_calibrate_task(int argc, char *argv[])
 {
-    (void)argc;
-    (void)argv;
-    int what = taskParameterWhat;
-    int mavlink_fd = taskParameterMavlinkFd;
+	(void)argc;
+	(void)argv;
+	int what = taskParameterWhat;
+	int mavlink_fd = taskParameterMavlinkFd;
 
-    switch (what)
-    {
-        case CALIBRATE_ACCELEROMETER:
-            calibrate_accelerometer(mavlink_fd);
-            break;
+	switch (what)
+	{
+	case CALIBRATE_ACCELEROMETER:
+		calibrate_accelerometer(mavlink_fd);
+		break;
 
-        case CALIBRATE_GYROSCOPE:
-            calibrate_gyroscope(mavlink_fd);
-            break;
+	case CALIBRATE_GYROSCOPE:
+		calibrate_gyroscope(mavlink_fd);
+		break;
 
-        case CALIBRATE_MAGNETOMETER:
-            calibrate_magnetometer(mavlink_fd);
-            break;
-    }
+	case CALIBRATE_MAGNETOMETER:
+		calibrate_magnetometer(mavlink_fd);
+		break;
+	}
 
-    return 0;
+	return 0;
 }
 
 __EXPORT int calibrate_in_new_task(int what, int mavlink_fd)
 {
-    int calibration_task = 0;
+	int calibration_task = 0;
 
-    taskParameterWhat = what;
-    taskParameterMavlinkFd = mavlink_fd;
+	taskParameterWhat = what;
+	taskParameterMavlinkFd = mavlink_fd;
 
-    calibration_task = task_spawn_cmd("leash_app",
-                                      SCHED_DEFAULT,
-                                      SCHED_PRIORITY_DEFAULT - 30,
-                                      3000,
-                                      start_calibrate_task,
-                                      nullptr);//(const char **)parameters);
+	calibration_task = task_spawn_cmd("leash_app",
+			SCHED_DEFAULT,
+			SCHED_PRIORITY_DEFAULT - 30,
+			3000,
+			start_calibrate_task,
+			nullptr);//(const char **)parameters);
 
 
-    return calibration_task;
+	return calibration_task;
 }
 
 __EXPORT void calibrate_stop()
 {
-    stopCalibration = true;
+	stopCalibration = true;
 }
 
 // Common procedure for sensor calibration that waits for the user to get ready
@@ -114,29 +114,29 @@ inline void print_scales(SENSOR_TYPE sensor, int mavlink_fd);
 template <class scale_T> void print_scales_helper(const char* device_path, int command, int mavlink_fd);
 
 __EXPORT bool calibrate_gyroscope(int mavlink_fd, const unsigned int sample_count,
-						const unsigned int max_error_count,
-						const int timeout) {
+		const unsigned int max_error_count,
+		const int timeout) {
 	CALIBRATION_RESULT res;
 
-        struct calibrator_s calibrator;
-        orb_advert_t to_calibrator = 0;
+	struct calibrator_s calibrator;
+	orb_advert_t to_calibrator = 0;
 
-        stopCalibration = false;
+	stopCalibration = false;
 
-        calibrator.remainingAxesCount = 0;
-        calibrator.status = CALIBRATOR_CALIBRATING;
-        calibrator.result = CALIBRATION_RESULT::SUCCESS;
+	calibrator.remainingAxesCount = 0;
+	calibrator.status = CALIBRATOR_CALIBRATING;
+	calibrator.result = CALIBRATION_RESULT::SUCCESS;
 
-        to_calibrator = orb_advertise(ORB_ID(calibrator), &calibrator);
+	to_calibrator = orb_advertise(ORB_ID(calibrator), &calibrator);
 
 	int beeper_fd = open(TONEALARM_DEVICE_PATH, O_RDONLY);
 	if (beeper_fd < 0) { // This is rather critical
 		warnx("Gyro calibration could not find beeper device. Aborting.");
 
-                calibrator.status = CALIBRATOR_FINISH;
-                calibrator.result = CALIBRATION_RESULT::FAIL;
+		calibrator.status = CALIBRATOR_FINISH;
+		calibrator.result = CALIBRATION_RESULT::FAIL;
 
-                orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+		orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 		return (false);
 	}
@@ -148,10 +148,10 @@ __EXPORT bool calibrate_gyroscope(int mavlink_fd, const unsigned int sample_coun
 		usleep(1500000); // Allow the tune to play out
 		close(beeper_fd);
 
-                calibrator.status = CALIBRATOR_FINISH;
-                calibrator.result = CALIBRATION_RESULT::FAIL;
+		calibrator.status = CALIBRATOR_FINISH;
+		calibrator.result = CALIBRATION_RESULT::FAIL;
 
-                orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+		orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 		return (false);
 	}
@@ -165,10 +165,10 @@ __EXPORT bool calibrate_gyroscope(int mavlink_fd, const unsigned int sample_coun
 	usleep(1500000); // Allow the tune to play out
 	close(beeper_fd);
 
-        calibrator.status = CALIBRATOR_FINISH;
-        calibrator.result = res;
+	calibrator.status = CALIBRATOR_FINISH;
+	calibrator.result = res;
 
-        orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+	orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 	if (res == CALIBRATION_RESULT::SUCCESS) {
 		print_scales(SENSOR_TYPE::GYRO, mavlink_fd);
@@ -180,9 +180,9 @@ __EXPORT bool calibrate_gyroscope(int mavlink_fd, const unsigned int sample_coun
 }
 
 __EXPORT bool calibrate_magnetometer(int mavlink_fd, unsigned int sample_count,
-							unsigned int max_error_count,
-							unsigned int total_time,
-							int poll_timeout_gap) {
+		unsigned int max_error_count,
+		unsigned int total_time,
+		int poll_timeout_gap) {
 	CALIBRATION_RESULT res;
 	int beeper_fd = open(TONEALARM_DEVICE_PATH, O_RDONLY);
 	if (beeper_fd < 0) { // This is rather critical
@@ -191,16 +191,16 @@ __EXPORT bool calibrate_magnetometer(int mavlink_fd, unsigned int sample_count,
 	}
 	prepare("Mag", beeper_fd);
 
-        struct calibrator_s calibrator;
-        orb_advert_t to_calibrator = 0;
+	struct calibrator_s calibrator;
+	orb_advert_t to_calibrator = 0;
 
-        stopCalibration = false;
+	stopCalibration = false;
 
-        calibrator.status = CALIBRATOR_CALIBRATING;
-        calibrator.remainingAxesCount = 0;
-        calibrator.result = CALIBRATION_RESULT::SUCCESS;
+	calibrator.status = CALIBRATOR_CALIBRATING;
+	calibrator.remainingAxesCount = 0;
+	calibrator.result = CALIBRATION_RESULT::SUCCESS;
 
-        to_calibrator = orb_advertise(ORB_ID(calibrator), &calibrator);
+	to_calibrator = orb_advertise(ORB_ID(calibrator), &calibrator);
 
 
 	res = do_mag_builtin_calibration();
@@ -215,10 +215,10 @@ __EXPORT bool calibrate_magnetometer(int mavlink_fd, unsigned int sample_count,
 		beep(beeper_fd, TONES::STOP);
 		beep(beeper_fd, TONES::WORKING);
 
-                calibrator.status = CALIBRATOR_DANCE;
-                calibrator.result = CALIBRATION_RESULT::SUCCESS;
+		calibrator.status = CALIBRATOR_DANCE;
+		calibrator.result = CALIBRATION_RESULT::SUCCESS;
 
-                orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+		orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 		res = do_mag_offset_calibration(sample_count, max_error_count, total_time, poll_timeout_gap);
 		beep(beeper_fd, TONES::STOP);
@@ -226,10 +226,10 @@ __EXPORT bool calibrate_magnetometer(int mavlink_fd, unsigned int sample_count,
 	print_results(res, "mag", beeper_fd, mavlink_fd);
 	close(beeper_fd);
 
-        calibrator.status = CALIBRATOR_FINISH;
-        calibrator.result = res;
+	calibrator.status = CALIBRATOR_FINISH;
+	calibrator.result = res;
 
-        orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+	orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 	if (res == CALIBRATION_RESULT::SUCCESS) {
 		print_scales(SENSOR_TYPE::MAG, mavlink_fd);
@@ -240,88 +240,116 @@ __EXPORT bool calibrate_magnetometer(int mavlink_fd, unsigned int sample_count,
 	}
 }
 
-__EXPORT bool calibrate_accelerometer(int mavlink_fd) {
+__EXPORT bool calibrate_accelerometer(int mavlink_fd, bool wait_for_console) {
 	CALIBRATION_RESULT res;
 	const char* axis_labels[] = {
-		"+x",
-		"-x",
-		"+y",
-		"-y",
-		"+z",
-		"-z"
+			"+x",
+			"-x",
+			"+y",
+			"-y",
+			"+z",
+			"-z"
 	};
 	int beeper_fd = open(TONEALARM_DEVICE_PATH, O_RDONLY);
 	if (beeper_fd < 0) { // This is rather critical
 		warnx("Accel calibration could not find beeper device. Aborting.");
 		return (false);
 	}
-	prepare("Accel", beeper_fd);
+	if (!wait_for_console) { // Skip useless waiting if we're operating from console
+		prepare("Accel", beeper_fd);
+	}
 
-        struct calibrator_s calibrator;
-        orb_advert_t to_calibrator = 0;
+	struct calibrator_s calibrator;
+	orb_advert_t to_calibrator = 0;
 
-        stopCalibration = false;
+	stopCalibration = false;
 
-        calibrator.status = CALIBRATOR_DETECTING_SIDE;
-        calibrator.remainingAxesCount = 6;
-        calibrator.result = CALIBRATION_RESULT::SUCCESS;
+	calibrator.status = CALIBRATOR_DETECTING_SIDE;
+	calibrator.remainingAxesCount = 6;
+	calibrator.result = CALIBRATION_RESULT::SUCCESS;
 
-        to_calibrator = orb_advertise(ORB_ID(calibrator), &calibrator);
+	to_calibrator = orb_advertise(ORB_ID(calibrator), &calibrator);
 
 	AccelCalibrator calib;
 	res = calib.init();
 	if (res == CALIBRATION_RESULT::SUCCESS) {
-                while (calib.sampling_needed && !stopCalibration) {
-                        int remainingAxesCount = 0;
+		while (calib.sampling_needed && !stopCalibration) {
+			int remainingAxesCount = 0;
 			printf("Rotate to one of the remaining axes: ");
 			for (int i = 0; i < 6; ++i) {
 				if (!calib.calibrated_axes[i]) {
 					fputs(axis_labels[i], stdout);
 					fputs(" ", stdout);
-                                        remainingAxesCount++;
+					remainingAxesCount++;
 				}
 			}
 			fputs("\n", stdout);
 			fflush(stdout); // ensure puts finished before calibration pauses the screen
 			beep(beeper_fd, TONES::WAITING_FOR_USER);
 
-                        calibrator.status = CALIBRATOR_DETECTING_SIDE;
-                        calibrator.remainingAxesCount = remainingAxesCount;
-                        calibrator.result = CALIBRATION_RESULT::SUCCESS;
+			calibrator.status = CALIBRATOR_DETECTING_SIDE;
+			calibrator.remainingAxesCount = remainingAxesCount;
+			calibrator.result = CALIBRATION_RESULT::SUCCESS;
 
-                        orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+			orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
-			res = calib.sample_axis();
-                        beep(beeper_fd, TONES::STOP);
+			if (wait_for_console) {
+				printf("------ 00: Press Space to advance\n");
+				pollfd console_poll;
+				console_poll.fd = fileno(stdin);
+				console_poll.events = POLLIN;
+				int ret = poll(&console_poll, 1, 20000);
+				if (ret != 1) {
+					printf("------ 20: Poll error in manual calibration. Aborting\n");
+					res = CALIBRATION_RESULT::FAIL;
+					break;
+				}
+				char in_c;
+				read(fileno(stdin), &in_c, 1);
+				if (in_c != ' ') {
+					printf("------ 21: Aborting on user's request\n");
+					res = CALIBRATION_RESULT::FAIL;
+					break;
+				}
+				else {
+					printf("------ 01: Sampling\n");
+				}
+				res = calib.sample_axis(100000); // Detect axis faster as we are quite sure we're standing still
+			}
+			else {
+				res = calib.sample_axis();
+			}
+
+			beep(beeper_fd, TONES::STOP);
 			if (res == CALIBRATION_RESULT::SUCCESS) {
 				beep(beeper_fd, TONES::WORKING);
 
-                                calibrator.status = CALIBRATOR_CALIBRATING;
-                                calibrator.result = CALIBRATION_RESULT::SUCCESS;
-                                calibrator.remainingAxesCount = remainingAxesCount;
+				calibrator.status = CALIBRATOR_CALIBRATING;
+				calibrator.result = CALIBRATION_RESULT::SUCCESS;
+				calibrator.remainingAxesCount = remainingAxesCount;
 
-                                orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+				orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
-                                res = calib.read_samples();
-                                beep(beeper_fd, TONES::STOP);
+				res = calib.read_samples();
+				beep(beeper_fd, TONES::STOP);
 				if (res == CALIBRATION_RESULT::SUCCESS) {
 					printf("Successfully sampled the axis.\n");
 				}
 				else {
-                                        calibrator.status = CALIBRATOR_CALIBRATING;
-                                        calibrator.result = res;
-                                        calibrator.remainingAxesCount = remainingAxesCount;
+					calibrator.status = CALIBRATOR_CALIBRATING;
+					calibrator.result = res;
+					calibrator.remainingAxesCount = remainingAxesCount;
 
-                                        orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+					orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 					break;
 				}
 			}
 			else if (res == CALIBRATION_RESULT::AXIS_DONE_FAIL) {
-                                calibrator.status = CALIBRATOR_DETECTING_SIDE;
-                                calibrator.remainingAxesCount = remainingAxesCount;
-                                calibrator.result = res;
+				calibrator.status = CALIBRATOR_DETECTING_SIDE;
+				calibrator.remainingAxesCount = remainingAxesCount;
+				calibrator.result = res;
 
-                                orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+				orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 				sleep(1); // ensures the tunes don't blend too much
 				beep(beeper_fd, TONES::NEGATIVE);
@@ -329,11 +357,11 @@ __EXPORT bool calibrate_accelerometer(int mavlink_fd) {
 				sleep(2); // gives time for negative tune to finish
 			}
 			else {
-                                calibrator.status = CALIBRATOR_DETECTING_SIDE;
-                                calibrator.remainingAxesCount = remainingAxesCount;
-                                calibrator.result = res;
+				calibrator.status = CALIBRATOR_DETECTING_SIDE;
+				calibrator.remainingAxesCount = remainingAxesCount;
+				calibrator.result = res;
 
-                                orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+				orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
 
 				break;
 			}
@@ -343,10 +371,19 @@ __EXPORT bool calibrate_accelerometer(int mavlink_fd) {
 		}
 	}
 
-        calibrator.status = CALIBRATOR_FINISH;
-        calibrator.result = res;
+	calibrator.status = CALIBRATOR_FINISH;
+	calibrator.result = res;
 
-        orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+	orb_publish(ORB_ID(calibrator), to_calibrator, &calibrator);
+
+	if (wait_for_console) {
+		if (res == CALIBRATION_RESULT::SUCCESS) {
+			printf("------ 02: Calibration succeeded\n");
+		}
+		else {
+			printf("------ 22: Calibration failed\n");
+		}
+	}
 
 	print_results(res, "accel", beeper_fd, mavlink_fd);
 	close(beeper_fd);
@@ -505,15 +542,15 @@ inline void beep(const int beeper_fd, TONES tone) {
 
 inline void print_results(CALIBRATION_RESULT res, const char* sensor_type, const int beeper_fd, int mavlink_fd) {
 	const char* errors[] = { // allows to index by (error code)
-		"No errors reported.\n", // code = 0 = SUCCESS
-		"Calibration failed.\n", // code = 1 = FAIL
-		"Failed to reset sensor scale.\n", // code = 2 = SCALE_RESET_FAIL
-		"Failed to apply sensor scale.\n", // code = 3 = SCALE_APPLY_FAIL
-		"Failed to get sane data from sensor.\n", // code = 4 = SENSOR_DATA_FAIL
-		"Failed to save parameters to EEPROM.\n", // code = 5 = PARAMETER_DEFAULT_FAIL
-		"Failed to set scaling parameters.\n", // code = 6 = PARAMETER_SET_FAIL
-		"Failed to read sensor scale.\n", // code = 7 = SCALE_READ_FAIL
-		"Axis has been sampled already.\n" // code = 8 = AXIS_DONE_FAIL
+			"No errors reported.\n", // code = 0 = SUCCESS
+			"Calibration failed.\n", // code = 1 = FAIL
+			"Failed to reset sensor scale.\n", // code = 2 = SCALE_RESET_FAIL
+			"Failed to apply sensor scale.\n", // code = 3 = SCALE_APPLY_FAIL
+			"Failed to get sane data from sensor.\n", // code = 4 = SENSOR_DATA_FAIL
+			"Failed to save parameters to EEPROM.\n", // code = 5 = PARAMETER_DEFAULT_FAIL
+			"Failed to set scaling parameters.\n", // code = 6 = PARAMETER_SET_FAIL
+			"Failed to read sensor scale.\n", // code = 7 = SCALE_READ_FAIL
+			"Axis has been sampled already.\n" // code = 8 = AXIS_DONE_FAIL
 	};
 	const size_t errors_size = sizeof(errors) / sizeof(*errors);
 
@@ -566,13 +603,13 @@ inline void print_scales(SENSOR_TYPE sensor, int mavlink_fd) {
 
 // Execution messages
 #define MSG_CALIBRATION_USAGE "Usage: %s module_name\nmodule_name is one of accel, gyro, mag, baro, airspeed, rc, all\n" \
-			"Advanced mode - gyro supports 3 parameters: sample count, max error count\n" \
-			"and timeout in ms (defaults: 5000, 1000, 1000)\n"
+		"Advanced mode - gyro supports 3 parameters: sample count, max error count\n" \
+		"and timeout in ms (defaults: 5000, 1000, 1000)\n"
 #define MSG_CALIBRATION_NOT_IMPLEMENTED "Not supported yet. Sorry.\n"
 #define MSG_CALIBRATION_WRONG_MODULE "Unknown module name \"%s\". Try accel, gyro, mag, baro, airspeed, rc, all\n"
 #define MSG_CALIBRATION_GYRO_WRONG_PARAM "0 or 3 parameters required.\nValid ranges for samples 1-1000000, for errors 0-5000, for timeout 2-10000.\n"
 #define MSG_CALIBRATION_MAG_WRONG_PARAM "0 or 4 parameters required.\nValid ranges for samples 100-total_time/5, for errors 0-sample_count,\nfor time 1-1000000, for gap 1-100.\n"
-#define MSG_CALIBRATION_ACCEL_WRONG_PARAM "No parameters supported.\n"
+#define MSG_CALIBRATION_ACCEL_WRONG_PARAM "Only 'manual' parameter supported.\n"
 
 extern "C" __EXPORT int calibrator_main(int argc, char ** argv)
 {
@@ -586,11 +623,19 @@ extern "C" __EXPORT int calibrator_main(int argc, char ** argv)
 	sensname = argv[1];
 
 	if (strcmp(sensname, "accel") == 0) {
-		if (argc != 2) {
+		if (argc > 3) {
 			fprintf(stderr, MSG_CALIBRATION_ACCEL_WRONG_PARAM);
 			return 1;
 		}
-		return ((int) !calibrate_accelerometer());
+		bool wait_for_console = false;
+		if (argc == 3) {
+			if (strcmp(argv[2], "manual") != 0) {
+				fprintf(stderr, MSG_CALIBRATION_ACCEL_WRONG_PARAM);
+				return 1;
+			}
+			wait_for_console = true;
+		}
+		return ((int) !calibrate_accelerometer(0, wait_for_console));
 	}
 	else if (strcmp(sensname,"gyro") == 0) {
 		if (argc == 2) {

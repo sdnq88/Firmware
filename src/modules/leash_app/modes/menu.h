@@ -44,6 +44,7 @@ protected:
         MENUENTRY_PAIRING,
         MENUENTRY_CALIBRATION,
         MENUENTRY_AIRDOG_CALIBRATION,
+        MENUENTRY_SENSOR_CHECK,
 
         // Calibration menu
         MENUENTRY_COMPASS,

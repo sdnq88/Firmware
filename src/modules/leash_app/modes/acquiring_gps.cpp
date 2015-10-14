@@ -6,7 +6,7 @@
 #include "../displayhelper.h"
 #include "../datamanager.h"
 
-#include "main.h"
+#include "sensorvalidation.h"
 #include "menu.h"
 #include "connect.h"
 
@@ -92,7 +92,7 @@ Base* Acquiring_gps::doEvent(int orbId)
 
     if (nextMode == nullptr && bothGotGPS())
     {
-        nextMode = new Main();
+        nextMode = new SensorValidation();
     }
     // Check if we are in service screen
     Base* service = checkServiceScreen(orbId);

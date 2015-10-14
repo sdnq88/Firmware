@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 import numpy
 import textwrap
 import glob
@@ -43,6 +45,7 @@ def addFont(path):
 	filelist.append(outpath + "space" + ".png")
 	filelist.append(outpath + "dot" + ".png")
 	filelist.append(outpath + "question" + ".png")
+	filelist.append(outpath + "colon" + ".png")
 
 addFont("screens/fonts/LucidaGrande_30")
 addFont("screens/fonts/LucidaGrande_15")

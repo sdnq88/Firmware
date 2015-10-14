@@ -43,6 +43,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../uORB.h"
+#include "sensor_status.h"
 
 /**
  * @addtogroup topics
@@ -68,6 +69,8 @@ struct target_global_position_s {
 	float eph;			/**< Error position horizontal, m						   */
 	float epv;			/**< Error position vertical, m							   */
 	float yaw; 			/**< Yaw in radians -PI..+PI.							   */
+	// TODO! [AK] Consider moving this status to separate topic and structure
+	SENSOR_STATUS sensor_status; /**< Validity of target's sensors */
 };
 
 /**

@@ -52,7 +52,7 @@
 #include <uORB/topics/position_setpoint_triplet.h>
 #include <uORB/topics/vehicle_command.h>
 #include <uORB/topics/vehicle_status.h>
- #include <uORB/topics/commander_request.h>
+#include <uORB/topics/commander_request.h>
 
 struct PARAMETERS {
     long int first_point_lat;
@@ -113,6 +113,8 @@ struct PARAMETERS {
     float offset_max_distance;
 
     float max_offset_rot_speed;
+    float min_offset_rot_period;
+
     float offset_angle_error_treshold;
 
     float offset_rot_speed_ch_cmd_step;
@@ -125,6 +127,15 @@ struct PARAMETERS {
     float offset_initial_distance;
 
     float follow_talt_offs;
+
+    float son_min;
+    float range_driver_min;
+    float range_driver_max;
+    float minimal_allowed_altitude;
+
+    float off_min_speed_to_rotate;
+
+    int use_altitude_correlation;
 
 };
 
@@ -192,6 +203,8 @@ struct PARAM_HANDLES {
     param_t offset_max_distance;
 
     param_t max_offset_rot_speed;
+    param_t min_offset_rot_period;
+
     param_t offset_angle_error_treshold;
 
     param_t offset_rot_speed_ch_cmd_step;
@@ -204,6 +217,15 @@ struct PARAM_HANDLES {
     param_t offset_initial_distance;
 
     param_t follow_talt_offs;
+
+    param_t son_min;
+    param_t range_driver_min;
+    param_t range_driver_max;
+    param_t minimal_allowed_altitude;
+
+    param_t off_min_speed_to_rotate;
+
+    param_t use_altitude_correlation;
 };
 
 class Navigator;
@@ -261,6 +283,10 @@ public:
     void disarm();
     void resetModeArguments(main_state_t main_state);
 
+    void update_range_finder_alt();
+
+    static float desired_alt_above_ground;
+
 protected:
 	Navigator *_navigator;
 
@@ -268,6 +294,7 @@ protected:
 
 	struct target_global_position_s 	*target_pos;
 	struct vehicle_global_position_s 	*global_pos;
+	struct vehicle_local_position_s 	*local_pos;
 	struct home_position_s 				*home_pos;
 	struct vehicle_status_s				*_vstatus;
     struct follow_offset_s              *follow_offset;
@@ -284,9 +311,13 @@ protected:
     static PARAMETERS parameters;
     static PARAM_HANDLES parameter_handles;
 
+    float current_follow_alt;
+
+
 private:
 
 	bool _first_run;
+
 
 	/*
 	 * This class has ptr data members, so it should not be copied,

@@ -6,17 +6,12 @@
 # Use the configuration's ROMFS, copy the px4iov2 firmware into
 # the ROMFS if it's available
 #
-# TODO: crete clean airleash romfs root
 ROMFS_ROOT	 ?= $(PX4_BASE)/ROMFS/AirLeash
-
-# With custom SiK firmware
-#ROMFS_EXTRA_FILES += $(wildcard $(PX4_BASE)/ROMFS/FW/*)
 
 #
 # Board support modules
 #
 MODULES		+= drivers/bluetooth21
-MODULES		+= drivers/bluetooth21/tests/bluetooth21_devtest
 MODULES		+= drivers/boards/AirLeash/$(CONFIG_BOARD_REVISION)
 MODULES		+= drivers/boards/AirLeash/kbd
 MODULES		+= drivers/calibration
@@ -33,21 +28,13 @@ MODULES		+= drivers/stm32/adc
 MODULES		+= drivers/stm32/tone_alarm
 MODULES		+= modules/airdog  # AIRD_LEASH_MODE parameter
 MODULES		+= modules/airdog/trajectory_calculator
-MODULES		+= modules/cl_helper
-MODULES		+= modules/display_tool
 MODULES		+= modules/eparam
-MODULES		+= modules/fs_test
 MODULES		+= modules/gpio_tool
 MODULES		+= modules/indication
-MODULES		+= modules/kbd_test
 MODULES		+= modules/leash
 MODULES		+= modules/leash_app
 MODULES		+= modules/leash_display
-MODULES		+= modules/quick_log
 MODULES		+= modules/sensors
-MODULES		+= modules/sensors_probe
-MODULES		+= modules/sensors_switch
-MODULES		+= modules/spi_exchange
 #MODULES		+= drivers/airspeed
 #MODULES		+= drivers/blinkm
 #MODULES		+= drivers/bluetooth21
@@ -58,9 +45,8 @@ MODULES		+= modules/spi_exchange
 #MODULES		+= drivers/hmc5883
 #MODULES		+= drivers/hott/hott_sensors
 #MODULES		+= drivers/hott/hott_telemetry
-#MODULES		+= drivers/ll40ls
-#MODULES		+= drivers/mb12xx
 #MODULES		+= drivers/mb1230serial
+#MODULES		+= drivers/mb12xx
 #MODULES		+= drivers/meas_airspeed
 #MODULES		+= drivers/pca8574
 #MODULES		+= drivers/px4fmu
@@ -68,23 +54,10 @@ MODULES		+= modules/spi_exchange
 #MODULES		+= drivers/rgbled
 #MODULES		+= drivers/sf0x
 
-# Needs to be burned to the ground and re-written; for now,
-# just don't build it.
-#MODULES		+= drivers/mkblctrl
-
-#
-# Mobile
-#
-MODULES += lib/activity
-MODULES += lib/airdog/hwinfo
-MODULES += lib/stm32f4
-MODULES += modules/mobile
-
 #
 # System commands
 #
-MODULES		+= systemcmds/bl_update
-MODULES		+= systemcmds/boardinfo
+MODULES		+= modules/airdog/calibrator
 MODULES		+= systemcmds/config
 MODULES		+= systemcmds/dumpfile
 MODULES		+= systemcmds/mtd
@@ -93,16 +66,28 @@ MODULES		+= systemcmds/param
 MODULES		+= systemcmds/perf
 MODULES		+= systemcmds/preflight_check
 MODULES		+= systemcmds/reboot
+MODULES		+= modules/sensor_validation
 MODULES		+= systemcmds/top
 MODULES		+= systemcmds/ver
+#MODULES		+= modules/SiKUploader
+#MODULES		+= modules/bt_cfg
+#MODULES		+= modules/cl_helper
+#MODULES		+= modules/display_tool
+#MODULES		+= modules/fs_test
+#MODULES		+= modules/kbd_test
+#MODULES		+= modules/sensors_probe
+#MODULES		+= modules/sensors_switch
+#MODULES		+= modules/serial_echo
+#MODULES		+= modules/serial_measure_latency
+#MODULES		+= modules/spi_exchange
+#MODULES		+= modules/stty
+#MODULES		+= systemcmds/bl_update
+#MODULES		+= systemcmds/boardinfo
 #MODULES		+= systemcmds/esc_calib
 #MODULES		+= systemcmds/mixer
 #MODULES		+= systemcmds/pwm
 #MODULES		+= systemcmds/tests
 #MODULES		+= systemcmds/writefile
-MODULES		+= modules/airdog/calibrator
-MODULES 	+= modules/cl_helper
-
 
 #
 # General system control
@@ -110,32 +95,31 @@ MODULES 	+= modules/cl_helper
 # TODO remove commander
 MODULES		+= modules/commander
 MODULES		+= modules/mavlink
-#MODULES		+= modules/navigator
+MODULES		+= modules/mobile
 #MODULES		+= modules/gpio_led
+#MODULES		+= modules/navigator
 #MODULES		+= modules/uavcan
 
 #
 # Estimation modules (EKF/ SO3 / other filters)
 #
-MODULES		+= modules/attitude_estimator_ekf
-MODULES		+= modules/position_estimator_inav
 MODULES		+= modules/attitude_estimator_q
+MODULES		+= modules/position_estimator_inav
+#MODULES		+= examples/flow_position_estimator
+#MODULES		+= modules/attitude_estimator_ekf
 #MODULES		+= modules/attitude_estimator_so3
 #MODULES		+= modules/ekf_att_pos_estimator
-#MODULES		+= examples/flow_position_estimator
 
 #
 # Vehicle Control
 #
-#MODULES		+= modules/segway # XXX Needs GCC 4.7 fix
-#MODULES		+= modules/fw_pos_control_l1
-#MODULES		+= modules/fw_att_control
 #MODULES		+= modules/mc_att_control
 #MODULES		+= modules/mc_pos_control
 
 #
 # Logging
 #
+MODULES		+= modules/quick_log
 MODULES		+= modules/sdlog2
 
 #
@@ -147,41 +131,27 @@ MODULES		+= modules/sdlog2
 #
 # Library modules
 #
-MODULES		+= modules/systemlib
 MODULES		+= modules/controllib
-MODULES		+= modules/uORB
 MODULES		+= modules/dataman # required by mavlink
+MODULES		+= modules/systemlib
+MODULES		+= modules/uORB
 #MODULES		+= modules/systemlib/mixer
 
 #
 # Libraries
 #
 LIBRARIES	+= lib/mathlib/CMSIS
-MODULES		+= lib/mathlib
-MODULES		+= lib/mathlib/math/filter
+MODULES		+= lib/activity
+MODULES		+= lib/airdog/hwinfo
+MODULES		+= lib/conversion
 MODULES		+= lib/geo
 MODULES		+= lib/geo_lookup
-MODULES		+= lib/conversion
+MODULES		+= lib/mathlib
+MODULES		+= lib/mathlib/math/filter
 MODULES		+= lib/stm32f4
 #MODULES		+= lib/ecl
 #MODULES		+= lib/external_lgpl
 #MODULES		+= lib/launchdetection
-MODULES		+= lib/activity
-
-# Hardware test
-#MODULES			+= examples/hwtest
-
-# Hardware test
-#MODULES			+= examples/hwtest
-
-# Airdog modules
-MODULES			+= modules/bt_cfg
-#MODULES			+= modules/serial_echo
-#MODULES			+= modules/serial_measure_latency
-#MODULES			+= modules/SiKUploader
-
-# Examples
-#MODULES			+= examples/nx
 
 #
 # Transitional support - add commands from the NuttX export archive.

@@ -155,6 +155,7 @@ Base* Main::processTakeoff(int orbId)
         }
         else if (dm->airdog_status.state_aird == AIRD_STATE_IN_AIR)
         {
+            local_timer = 0;
             baseCondition.main = IN_FLINGHT;
             baseCondition.sub = NONE;
         }
@@ -462,7 +463,7 @@ Base* Main::processFlight(int orbId)
     else if (orbId == FD_KbdHandler)
     {
         DOG_PRINT("we are here!!!!!!!!!\n");
-        if ( key_LongPressed(BTN_MODE))
+        if ( key_ShortPressed(BTN_MODE))
         {
             if (baseCondition.main == IN_FLINGHT)
             {

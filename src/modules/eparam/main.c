@@ -5,12 +5,14 @@
 #include <stdlib.h>
 
 #include <systemlib/param/param.h>
+#include <lib/activity/activity_files.h>
 
 #include "eparam.h"
 
 __EXPORT int eparam_main(int argc, char *argv[]);
 
 static FILE *gFile = NULL;
+static const char* factoryFileName = "/fs/microsd/fact.par";
 
 static void do_save(void *arg, param_t param)
 {
@@ -189,6 +191,132 @@ int eparam_load(const char *filename)
     return result;
 }
 
+int eparam_factorySave(void)
+{
+    const char *params[] = {
+        "SENS_ACC_CDATE",
+        "SENS_ACC_CTEMP",
+        "SENS_ACC_XOFF",
+        "SENS_ACC_XSCALE",
+        "SENS_ACC_YOFF",
+        "SENS_ACC_YSCALE",
+        "SENS_ACC_ZOFF",
+        "SENS_ACC_ZSCALE",
+        "SENS_BARO_QNH",
+        "SENS_BOARD_X_OFF",
+        "SENS_BOARD_Y_OFF",
+        "SENS_GYRO_CDATE",
+        "SENS_GYRO_CTEMP",
+        "SENS_GYRO_XOFF",
+        "SENS_GYRO_XSCALE",
+        "SENS_GYRO_YOFF",
+        "SENS_GYRO_YSCALE",
+        "SENS_GYRO_ZOFF",
+        "SENS_GYRO_ZSCALE",
+        "SENS_MAG_CDATE",
+        "SENS_MAG_CTEMP",
+        "SENS_MAG_XCT_OFF",
+        "SENS_MAG_XOFF",
+        "SENS_MAG_XPECT_X",
+        "SENS_MAG_XPECT_Y",
+        "SENS_MAG_XPECT_Z",
+        "SENS_MAG_XSCALE",
+        "SENS_MAG_YOFF",
+        "SENS_MAG_YSCALE",
+        "SENS_MAG_ZOFF",
+        "SENS_MAG_ZSCALE",
+        NULL
+    };
+    int i = 0;
+
+    for (i = 0; params[i] != NULL; i++)
+    {
+        if (i == 0)
+        {
+            eparam_save(params[i], factoryFileName, "w");
+        }
+        else
+        {
+            eparam_save(params[i], factoryFileName, "a");
+        }
+    }
+    return 0;
+}
+
+int eparam_factoryLoad(void)
+{
+    return eparam_load(factoryFileName);
+}
+
+int eparam_factoryReset(void)
+{
+    // save params
+    int SYS_ACT = 0;
+    int A_DEVICE_ID = 0;
+    int MAV_SYS_ID = 0;
+    int OVERALL_FLY_TIME = 0;
+    int OVERALL_FLIGHT_COUNT = 0;
+
+    if (param_get(param_find("SYS_ACT"), &SYS_ACT))
+    {
+        printf("failed to get SYS_ACT value");
+    }
+
+    if (param_get(param_find("A_DEVICE_ID"), &A_DEVICE_ID))
+    {
+        printf("failed to get A_DEVICE_ID value");
+    }
+
+    if (param_get(param_find("MAV_SYS_ID"), &MAV_SYS_ID))
+    {
+        printf("failed to get MAV_SYS_ID value");
+    }
+
+    if (param_get(param_find("A_ABS_FLY_TIME"), &OVERALL_FLY_TIME))
+    {
+        printf("failed to get A_ABS_FLY_TIME value");
+    }
+
+    if (param_get(param_find("A_ABS_FLY_COUNT"), &OVERALL_FLIGHT_COUNT))
+    {
+        printf("failed to get A_ABS_FLY_COUNT value");
+    }
+
+    activity_factory_reset();
+    param_reset_all();
+
+    eparam_load(factoryFileName);
+
+    // restore params
+    if (param_set(param_find("SYS_ACT"), &SYS_ACT))
+    {
+        printf("failed to set SYS_ACT value");
+    }
+
+    if (param_set(param_find("A_DEVICE_ID"), &A_DEVICE_ID))
+    {
+        printf("failed to set A_DEVICE_ID value");
+    }
+
+    if (param_set(param_find("MAV_SYS_ID"), &MAV_SYS_ID))
+    {
+        printf("failed to set MAV_SYS_ID value");
+    }
+
+    if (param_set(param_find("A_ABS_FLY_TIME"), &OVERALL_FLY_TIME))
+    {
+        printf("failed to set A_ABS_FLY_TIME value");
+    }
+
+    if (param_set(param_find("A_ABS_FLY_COUNT"), &OVERALL_FLIGHT_COUNT))
+    {
+        printf("failed to set A_ABS_FLY_COUNT value");
+    }
+
+    param_save_default();
+    return 0;
+}
+
 int
 eparam_main(int argc, char *argv[])
 {
@@ -210,10 +338,25 @@ eparam_main(int argc, char *argv[])
         const char *filename = argv[2];
         eparam_load(filename);
     }
+    else if (argc == 2 && strcmp(argv[1], "factorySave") == 0)
+    {
+        eparam_factorySave();
+    }
+    else if (argc == 2 && strcmp(argv[1], "factoryLoad") == 0)
+    {
+        eparam_factoryLoad();
+    }
+    else if (argc == 2 && strcmp(argv[1], "factoryReset") == 0)
+    {
+        eparam_factoryReset();
+    }
     else
     {
         printf("eparam save <filename> <search_string1> [<search_string2> ...]\n");
         printf("eparam load <filename>\n");
+        printf("eparam factorySave\n");
+        printf("eparam factoryLoad\n");
+        printf("eparam factoryReset\n");
     }
 
     return 0;

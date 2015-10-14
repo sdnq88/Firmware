@@ -54,6 +54,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "../uORB.h"
+#include "sensor_status.h"
 
 /**
  * @addtogroup topics @{
@@ -292,6 +293,7 @@ struct vehicle_status_s {
 
 	uint8_t error_code;
 	uint8_t error_stamp;
+	SENSOR_STATUS sensor_status;
 };
 
 /**

@@ -17,12 +17,16 @@ int bgc_main(int argc, char *argv[]) {
             return 3;
         }
     } else if ( argc == 2 && !strcmp(argv[1], "test") ) {
-        if ( !BGC::BGC::Factory_check() ) {
+        if ( !BGC::BGC::Factory_check(false) ) {
+            return 4;
+        }
+    } else if ( argc == 2 && !strcmp(argv[1], "test-quick") ) {
+        if ( !BGC::BGC::Factory_check(true) ) {
             return 4;
         }
     } else {
         QLOG_literal("[BGC] bad usage of bgc");
-        printf("usage: bgc [start|stop|test]\n");
+        printf("usage: bgc [start|stop|test|test-quick]\n");
         return 1;
     }
 

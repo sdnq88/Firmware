@@ -65,6 +65,35 @@ request_connect(Device & dev, ConnectionState & conn, const Address6 & addr)
 	return ok;
 }
 
+
+template <typename ServiceIO>
+bool
+drop_all_connections(ServiceIO io, ConnectionState & conn) {
+
+	channel_mask_t connected = conn.channels_connected;
+
+    bool all_ok = true;
+
+    for (channel_index_t ch = 1; ch <= 7; ++ch)
+    {
+        if (is_set(connected, ch))
+        {
+            auto cmd = prefill_packet<COMMAND_DROP_CONNECTION, CMD_DROP_CONNECTION>();
+            cmd.channelId = ch;
+
+            RESPONSE_DROP_CONNECTION rsp;
+
+            bool ok = send_receive_verbose(io, cmd, rsp)
+                and get_response_status(rsp) == MPSTATUS_OK;
+
+            all_ok = all_ok && ok;
+        }
+    }
+
+    return all_ok;
+}
+
+
 bool
 handle(ConnectionState & conn, const RESPONSE_EVENT_UNION & p)
 {

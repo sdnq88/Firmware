@@ -1,0 +1,13 @@
+set R FAIL
+
+echo ---
+
+echo bgc test
+if bgc test
+then
+	set R OK
+fi
+
+echo ===
+
+echo $R

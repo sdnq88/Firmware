@@ -105,6 +105,7 @@ Navigator::Navigator() :
 	_navigator_task(-1),
 	_mavlink_fd(-1),
 	_global_pos_sub(-1),
+    _local_pos_sub(-1),
 	_gps_pos_sub(-1),
 	_home_pos_sub(-1),
 	_vstatus_sub(-1),
@@ -128,6 +129,7 @@ Navigator::Navigator() :
 	_vstatus{},
 	_control_mode{},
 	_global_pos{},
+	_local_pos{},
 	_gps_pos{},
 	_sensor_combined{},
 	_home_pos{},
@@ -215,6 +217,12 @@ void
 Navigator::global_position_update()
 {
 	orb_copy(ORB_ID(vehicle_global_position), _global_pos_sub, &_global_pos);
+}
+
+void
+Navigator::local_position_update()
+{
+	orb_copy(ORB_ID(vehicle_local_position), _local_pos_sub, &_local_pos);
 }
 
 void
@@ -407,6 +415,7 @@ Navigator::task_main()
 
 	/* do subscriptions */
 	_global_pos_sub = orb_subscribe(ORB_ID(vehicle_global_position));
+	_local_pos_sub = orb_subscribe(ORB_ID(vehicle_local_position));
 	_gps_pos_sub = orb_subscribe(ORB_ID(vehicle_gps_position));
 	_sensor_combined_sub = orb_subscribe(ORB_ID(sensor_combined));
 	_capabilities_sub = orb_subscribe(ORB_ID(navigation_capabilities));
@@ -425,6 +434,7 @@ Navigator::task_main()
 	vehicle_status_update();
 	vehicle_control_mode_update();
 	global_position_update();
+    local_position_update();
 	gps_position_update();
 	sensor_combined_update();
 	home_position_update();
@@ -446,11 +456,14 @@ Navigator::task_main()
 	/* rate limit position updates to 50 Hz */
 	orb_set_interval(_global_pos_sub, 20);
 
+	/* rate limit position updates to 50 Hz */
+	orb_set_interval(_local_pos_sub, 20);
+
 	hrt_abstime mavlink_open_time = 0;
 	const hrt_abstime mavlink_open_interval = 500000;
 
 	/* wakeup source(s) */
-	struct pollfd fds[10];
+	struct pollfd fds[11];
 
 	/* Setup of loop */
 	fds[0].fd = _global_pos_sub;
@@ -473,6 +486,8 @@ Navigator::task_main()
 	fds[8].events = POLLIN;
 	fds[9].fd = _target_trajectory_sub;
 	fds[9].events = POLLIN;
+	fds[10].fd = _local_pos_sub;
+	fds[10].events = POLLIN;
 
 	int _poll_cnt = sizeof(fds)/sizeof(fds[0]);
 	for (int i = 0; i < _poll_cnt; ++i) {
@@ -501,6 +516,13 @@ Navigator::task_main()
 			mavlink_open_time = hrt_abstime() + mavlink_open_interval;
 			_mavlink_fd = open(MAVLINK_LOG_DEVICE, 0);
 		}
+
+
+		/* local position updated */
+		if (fds[10].revents & POLLIN) {
+			local_position_update();
+		}
+
 
 		/* target trajectory updated */
 		if (fds[9].revents & POLLIN) {

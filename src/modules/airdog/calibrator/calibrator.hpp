@@ -48,7 +48,7 @@ __EXPORT bool calibrate_magnetometer(int mavlink_fd=0, unsigned int sample_count
  * mavlink_fd - if not zero, then messages will be sent via mavlink too
  * @return true if calibration was successful, false otherwise
  */
-__EXPORT bool calibrate_accelerometer(int mavlink_fd=0);
+__EXPORT bool calibrate_accelerometer(int mavlink_fd=0, bool wait_for_console=false);
 
 /* Checks if the copter is in rest state (aka standing still)
  * timeout - timeout after which the function will consider copter to be moving

@@ -320,7 +320,8 @@ GPS::task_main()
 			_report_gps_pos.cog_rad = 0.0f;
 			_report_gps_pos.vel_ned_valid = true;
 
-			// constant time provided at start is reported
+			// current time relative to specified fake time is reported
+			_report_gps_pos.timestamp_time = hrt_absolute_time();
 			_report_gps_pos.time_gps_usec = _fake_gps_time + hrt_absolute_time();
 
 			// no satellite information simulated

@@ -28,7 +28,8 @@ OffsetFollow::OffsetFollow(Navigator *navigator, const char *name) :
     _offset_len(0.0f),
     _angle_err(0.0f),
     _vstatus(nullptr),
-    _base_offset_inited(false)
+    _base_offset_inited(false),
+    _start_offset(0.0f)
 {
     updateParameters();
 }
@@ -53,6 +54,7 @@ OffsetFollow::on_activation()
 
     follow_offset = _navigator->get_follow_offset();
     global_pos = _navigator->get_global_position();
+    local_pos =  _navigator->get_local_position();
 	target_pos = _navigator->get_target_position();
     _vstatus = _navigator->get_vstatus();
 
@@ -67,6 +69,13 @@ OffsetFollow::on_activation()
 
 	_base_offset(2) = 0.0f;
 
+    float target_alt_delta = target_pos->alt - _navigator->get_target_start_alt();
+
+    _start_offset = global_pos->alt - (_navigator->get_drone_start_alt() + target_alt_delta);
+
+    NavigatorMode::desired_alt_above_ground = _start_offset + ( -_base_offset(2));
+    update_range_finder_alt();
+    
     if (_vstatus->nav_state == NAVIGATION_STATE_CIRCLE_AROUND) {
 
         _rotation_speed_ms = NavigatorMode::parameters.offset_rot_speed_ch_cmd_step;
@@ -132,7 +141,7 @@ OffsetFollow::on_active_front_follow() {
         _rotation_speed_ms = 0.0f;
     }
 
-    if (_target_speed < 1.0f)
+    if (_target_speed < NavigatorMode::parameters.off_min_speed_to_rotate) 
         _rotation_speed_ms = 0.0f;
 
 }
@@ -207,6 +216,11 @@ OffsetFollow::execute_vehicle_command() {
             // TODO:
             break;
     }
+
+    // For range finder min altitude correlation with up/down
+    NavigatorMode::desired_alt_above_ground = _start_offset + ( -_base_offset(2));
+    update_range_finder_alt();
+
 }
 
 
@@ -217,6 +231,7 @@ OffsetFollow::execute_vehicle_command_abs_follow() {
     if (cmd.command == VEHICLE_CMD_NAV_REMOTE_CMD) {
         REMOTE_CMD remote_cmd = (REMOTE_CMD)cmd.param1;
         math::Vector<3> offset =_follow_offset_vect;
+        float alpha;
 
         switch(remote_cmd){
             case REMOTE_CMD_UP: 
@@ -226,10 +241,12 @@ OffsetFollow::execute_vehicle_command_abs_follow() {
                 offset_height_step(1);
                 break;
             case REMOTE_CMD_LEFT: 
-                offset_rotation_step(-1, _offset_sp_angle);
+                alpha = NavigatorMode::parameters.horizon_button_step / _radius;
+                offset_rotation_step(-1, _offset_sp_angle, alpha);
                 break;
             case REMOTE_CMD_RIGHT: 
-                offset_rotation_step(1, _offset_sp_angle);
+                alpha = NavigatorMode::parameters.horizon_button_step / _radius;
+                offset_rotation_step(1, _offset_sp_angle, alpha);
                 break;
             case REMOTE_CMD_CLOSER: 
                 offset_distance_step(-1);
@@ -239,6 +256,8 @@ OffsetFollow::execute_vehicle_command_abs_follow() {
                 break;
         }
     }
+
+    // For range finder min altitude correlation with up/down
 }
 
 
@@ -281,6 +300,7 @@ OffsetFollow::execute_vehicle_command_front_follow() {
 
     if (cmd.command == VEHICLE_CMD_NAV_REMOTE_CMD) {
         REMOTE_CMD remote_cmd = (REMOTE_CMD)cmd.param1;
+        float alpha;
 
         switch(remote_cmd){
             case REMOTE_CMD_UP: 
@@ -291,13 +311,15 @@ OffsetFollow::execute_vehicle_command_front_follow() {
                 break;
 
             case REMOTE_CMD_LEFT: 
-                offset_rotation_step(-1, _front_follow_additional_angle);
-                offset_rotation_step(1, _offset_sp_angle);
+                alpha = _pi/4.0f;
+                offset_rotation_step(-1, _front_follow_additional_angle, alpha);
+                offset_rotation_step(-1, _offset_sp_angle, alpha);
                  
                 break;
             case REMOTE_CMD_RIGHT: 
-                offset_rotation_step(1, _front_follow_additional_angle);
-                offset_rotation_step(1, _offset_sp_angle);
+                alpha = _pi/4.0f;
+                offset_rotation_step(1, _front_follow_additional_angle, alpha);
+                offset_rotation_step(1, _offset_sp_angle, alpha);
                 break;
 
             case REMOTE_CMD_CLOSER: 
@@ -331,14 +353,14 @@ OffsetFollow::offset_distance_step(int direction) {
 
     _base_offset(0) += direction * step_len;
 
+    _radius = sqrt(_base_offset(0) * _base_offset(0) + _base_offset(1) * _base_offset(1));
+
 }
 
 void
-OffsetFollow::offset_rotation_step(int direction, float &angle) {
+OffsetFollow::offset_rotation_step(int direction, float &angle, float alpha) {
 
     printf("Rotation step\n");
-
-    float alpha = NavigatorMode::parameters.horizon_button_step / _radius;
     angle += direction * alpha;
     normalize_angle(angle);
 
@@ -352,9 +374,15 @@ OffsetFollow::offset_height_step(int direction) {
     if (direction == -1)
         _base_offset(2) += direction * NavigatorMode::parameters.up_button_step;
 
-    if (direction == 1)
-        _base_offset(2) += direction * NavigatorMode::parameters.down_button_step;
+    if (direction == 1) {
 
+        float down_step = NavigatorMode::parameters.down_button_step;
+        float son_allowed_h = local_pos->dist_bottom - NavigatorMode::parameters.son_min;
+
+        if (!local_pos->dist_bottom_valid || (local_pos->dist_bottom_valid && son_allowed_h >= down_step)) {
+            _base_offset(2) += direction * NavigatorMode::parameters.down_button_step;
+        }
+    }
 }
 
 void
@@ -399,8 +427,16 @@ OffsetFollow::update_offset_sp_angle() {
         
     if (_rotation_speed_ms <= -NavigatorMode::parameters.max_offset_rot_speed)
         _rotation_speed_ms = -NavigatorMode::parameters.max_offset_rot_speed;
+    
+    float max_angular_rot_speed = _2pi / NavigatorMode::parameters.min_offset_rot_period;
 
     _rotation_speed = _rotation_speed_ms / _radius;
+
+    if (_rotation_speed < -max_angular_rot_speed)
+        _rotation_speed = -max_angular_rot_speed;
+
+    if (_rotation_speed > max_angular_rot_speed)
+        _rotation_speed = max_angular_rot_speed;
 
     _t_prev = _t_cur;
     _t_cur = hrt_absolute_time();

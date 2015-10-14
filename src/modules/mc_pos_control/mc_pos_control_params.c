@@ -42,6 +42,20 @@
 #include <systemlib/param/param.h>
 
 /**
+ * maximal distance for the setpoint that should be aproximatelly as signal range
+ *
+ * @group airdog
+ * */
+PARAM_DEFINE_FLOAT(A_M_SPDIST_RANGE, 500.0f);
+
+/**
+ * maximal distance for the setpoint that drone can physically reach
+ *
+ * @group airdog
+ * */
+PARAM_DEFINE_FLOAT(A_M_SPDIST_MAX, 8000.0f);
+
+/**
  * cable park maximal initial position taking speed
  *
  * @group cable park
@@ -133,13 +147,22 @@ PARAM_DEFINE_FLOAT(MPC_Z_VEL_D, 0.01f);
 /**
  * Maximum vertical velocity
  *
- * Maximum vertical velocity in AUTO mode and endpoint for stabilized modes (ALTCTRL, POSCTRL).
+ * Maximum vertical velocity when moving up
  *
  * @unit m/s
  * @min 0.0
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX, 4.0f);
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_U, 4.0f);
+
+/**
+ * Maximum vertical velocity when moving down
+ *
+ * @unit m/s
+ * @min 0.0
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(MPC_Z_VEL_MAX_D, 4.0f);
 
 /**
  * Vertical velocity feed forward
@@ -230,7 +253,7 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_AIR, 45.0f);
  * @max 90.0
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 20.0f);
+PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 45.0f);
 
 /**
  * Landing descend rate
@@ -242,6 +265,17 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 20.0f);
 PARAM_DEFINE_FLOAT(LAND_REG_V, 0.9f);
 
 /**
+ * Max xy speed during landing
+ *
+ * @unit m/s
+ * @min 0.0
+ * @group Multicopter Position Control
+ */
+PARAM_DEFINE_FLOAT(LAND_MAX_XY_V, 2.0f);
+
+
+
+/**
  * Takeoff ascend rate
  *
  * @unit m/s
@@ -249,6 +283,16 @@ PARAM_DEFINE_FLOAT(LAND_REG_V, 0.9f);
  * @group Multicopter Position Control
  */
 PARAM_DEFINE_FLOAT(MPC_TAKEOFF_SPD, 2.5f);
+
+/**
+ * Takeoff minimum thrust warmup time in microseconds
+ */
+PARAM_DEFINE_INT32(MPC_TAKEOFF_WARM, 1000000);
+
+/**
+ * Takeoff gradient velocity time in microseconds
+ */
+PARAM_DEFINE_INT32(MPC_TAKEOFF_GRAD, 500000);
 
 /**
  * Follow mode velocity feed-forward for XY plane
@@ -400,3 +444,5 @@ PARAM_DEFINE_FLOAT(FOL_FF_GRAD_STRT, 20.0f);
  * Above this interval FF will be 0.0 (0% of full feed foward)
  */
 PARAM_DEFINE_FLOAT(FOL_FF_GRAD_END, 150.0f);
+
+

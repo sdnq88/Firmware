@@ -1,20 +1,24 @@
 #pragma once
 
-#include "base.h"
+#include "list.h"
 
 namespace modes
 {
 
-class SensorCheck : public Base
+class FactoryTest : public List
 {
 public:
-    SensorCheck();
+    FactoryTest();
+    ~FactoryTest();
 
     virtual int getTimeout();
     virtual void listenForEvents(bool awaitMask[]);
     virtual Base* doEvent(int orbId);
-private:
+
+protected:
+    int pressedButtonMask;
 
 };
 
-}
+} // end of namespace modes
+

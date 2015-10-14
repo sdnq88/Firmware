@@ -9,6 +9,7 @@
 #include <uORB/topics/kbd_handler.h>
 #include <uORB/topics/leash_display.h>
 #include <uORB/topics/mavlink_stats.h>
+#include <uORB/topics/sensor_status.h>
 #include <uORB/topics/system_power.h>
 #include <uORB/topics/target_global_position.h>
 #include <uORB/topics/target_gps_raw.h>
@@ -33,6 +34,7 @@ enum Orbs
     FD_LeashRowGPS,
     FD_LocalPos,
     FD_MavlinkStatus,
+    FD_SensorStatus,
     FD_SystemPower,
     FD_VehicleStatus,
     // Values should be added above this line 
@@ -55,6 +57,7 @@ public:
     struct calibrator_s calibrator;
     struct kbd_handler_s kbd_handler;
     struct mavlink_stats_s mavlink_received_stats;
+    struct sensor_status_s sensor_status;
     struct system_power_s system_power;
     struct target_gps_raw_s droneRawGPS;
     struct bt_link_status_s  btLinkQuality;
