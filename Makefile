@@ -120,7 +120,7 @@ all:			checksubmodules $(DESIRED_FIRMWARES)
 
 factory: BUILD_DATE=$(shell date +%Y%m%d)
 factory:
-	$(MAKE) archives BOARDS='Factory-AirDogFMU Factory-AirLeash'
+	$(MAKE) archives BOARDS='px4io-v2 Factory-AirDogFMU Factory-AirLeash'
 	$(MAKE) Factory-AirDogFMU Factory-AirLeash
 	cp Images/Factory-AirDogFMU.px4 Images/$(BUILD_DATE)-Factory-AIRFMU.px4
 	cp Images/Factory-AirLeash.px4 Images/$(BUILD_DATE)-Factory-ALMAIN.px4
