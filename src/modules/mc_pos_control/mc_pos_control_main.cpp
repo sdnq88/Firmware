@@ -358,6 +358,7 @@ private:
     float _current_allowed_velocity;    /**< cable park maximum speed (taking last and first point into account) */
     bool _valid_vel_correction = false; /**< cable park thing to use velocity correcion */
     bool _cbp_flight_to_possition = true;
+    bool was_corrected_till_end = false;
 
 	LocalPositionPredictor	_tpos_predictor;
 
@@ -2786,8 +2787,8 @@ float MulticopterPositionControl::landing_speed_correction() {
             landing_coeff = _params.land_speed_max/_params.land_speed_min;
         }
         // Don't decrease speed more than land_speed_min
-        else if(landing_coeff < 1.0f) {
-            landing_coeff = 1.0f;
+        else if(landing_coeff < 1.1f) {
+            landing_coeff = 0.999f;
         }
 
         if (landing_coeff < 1.1f) {
@@ -2795,12 +2796,19 @@ float MulticopterPositionControl::landing_speed_correction() {
              * This section waits 1 second after sonar lowered speed to minimal
              * and then triggers max landing speed back to stop motors faster
              */
+            was_corrected_till_end = true;
             if (landed_time == 0) {
                 landed_time = hrt_absolute_time();
             }
-            else if (hrt_absolute_time() - landed_time > 1000000) {
+            else if (hrt_absolute_time() - landed_time > 1500000) {
                 landing_coeff = _params.land_speed_max/_params.land_speed_min;
+                // reseting landing time
+                landed_time = 0;
             }
+        }
+        else
+        {
+            was_corrected_till_end = false;
         }
         DOG_PRINT("[MC_POS] lid valid, current land speed %0.4f\n",
                 (double) (landing_coeff * _params.land_speed_min));;
@@ -2809,7 +2817,12 @@ float MulticopterPositionControl::landing_speed_correction() {
         // Distance between home and current position = sqrt( (x_1 - x_2)^2 + (y_1 - y_2)^2 )
         float dist_between_points = sqrtf(pow((_pos(0) - _home_pos.x),2) + pow((_pos(1) - _home_pos.y), 2));
         float till_ground = _home_pos.z - _pos(2);
-        if (dist_between_points < 5.0f) // then use home altitude to validate lidar
+        if (was_corrected_till_end &&
+                hrt_absolute_time() - landed_time > 1500000)
+        {
+            landing_coeff = _params.land_speed_max/_params.land_speed_min;
+        }
+        else if (dist_between_points < 5.0f) // then use home altitude to validate lidar
         {
             if (till_ground < _params.land_sensor_validation_dist) // then use regular speed
             {
