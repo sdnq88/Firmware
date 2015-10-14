@@ -38,8 +38,10 @@ main(int argc, const char * argv[]);
 int
 main(int argc, const char * argv[])
 {
-	using BT::streq;
 	using namespace BT::Daemon;
+	using BT::Daemon::Main::Maintenance;
+	using BT::Daemon::Main::maintenance;
+	using BT::streq;
 
 	if (argc >= 4 and streq(argv[1], "start"))
 	{
@@ -79,7 +81,11 @@ main(int argc, const char * argv[])
 	}
 	else if (argc == 3 and streq(argv[1], "firmware-version"))
 	{
-		return Main::check_version_firmware(argv[2]);
+		return maintenance(argv[2], Maintenance::FIRMWARE_VERSION);
+	}
+	else if (argc == 3 and streq(argv[1], "address"))
+	{
+		return maintenance(argv[2], Maintenance::LOCAL_ADDRESS);
 	}
 	else
 	{

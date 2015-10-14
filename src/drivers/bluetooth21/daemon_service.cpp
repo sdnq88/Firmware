@@ -322,7 +322,7 @@ synced_loop(MultiPlexer & mp, ServiceIO & service_io, ServiceState & svc)
         }
 
         if (Globals::Service::reset_module_flag) {
-            if (soft_reset(service_io)) 
+            if (soft_reset(service_io))
                 Globals::Service::reset_module_done();
         }
 
@@ -637,6 +637,32 @@ check_version_firmware()
 		// Switch to AT mode to ease factory firmware, just in case.
 		module_factory_default(service_io, 0xbf);
 	}
+
+	return ok ? 0 : 1;
+}
+
+bool
+local_address()
+{
+	using namespace BT::Service::Laird;
+
+	unique_file raw_dev = tty_open(DEV_BT_SVC);
+	auto trace = make_trace_handle<SERVICE_TRACE>(
+		SERVICE_TRACE_FILE, raw_dev, "bt21_io  ", "bt21_svc "
+	);
+
+	ServiceState svc;
+	auto service_io = make_service_io(trace.dev, svc);
+
+	Address6 addr;
+	bool ok = fileno(raw_dev) > -1
+		and local_address_read(service_io, addr);
+	if (ok)
+	{
+		log_info("Local address " Address6_FMT ".\n",
+				Address6_FMT_ITEMS(addr));
+	}
+	else { log_err("Failed to read local address.\n"); }
 
 	return ok ? 0 : 1;
 }

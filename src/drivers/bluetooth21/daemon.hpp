@@ -28,8 +28,14 @@ report_status(FILE *);
 void
 request_stop();
 
+enum class Maintenance
+{
+	FIRMWARE_VERSION,
+	LOCAL_ADDRESS,
+};
+
 int
-check_version_firmware(const char ttyname[]);
+maintenance(const char ttyname[], Maintenance op);
 
 }
 // end of namespace Main
@@ -87,6 +93,9 @@ request_stop();
 
 bool
 check_version_firmware();
+
+bool
+local_address();
 
 }
 // end of namespace Service

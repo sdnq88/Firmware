@@ -6,6 +6,7 @@
 #include <cstdio>
 
 #include "daemon.hpp"
+#include "debug.hpp"
 
 namespace BT
 {
@@ -132,7 +133,7 @@ request_stop()
 }
 
 int
-check_version_firmware(const char ttyname[])
+maintenance(const char ttyname[], Maintenance op)
 {
 	if (is_running())
 	{
@@ -153,7 +154,18 @@ check_version_firmware(const char ttyname[])
 	ok = running = Multiplexer::is_running();
 	if (ok)
 	{
-		ok = Service::check_version_firmware();
+		switch (op)
+		{
+		case Maintenance::FIRMWARE_VERSION:
+			ok = Service::check_version_firmware();
+			break;
+		case Maintenance::LOCAL_ADDRESS:
+			ok = Service::local_address();
+			break;
+		default:
+			dbg("Main::run_svc_op() invalid argument.\n");
+			ok = false;
+		}
 
 		Multiplexer::request_stop();
 		Multiplexer::join();
@@ -161,7 +173,7 @@ check_version_firmware(const char ttyname[])
 
 	running = false;
 
-	return ok ;
+	return ok ? 0 : 1;
 }
 
 }
