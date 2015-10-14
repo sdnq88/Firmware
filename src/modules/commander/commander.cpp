@@ -763,7 +763,7 @@ bool handle_command(struct vehicle_status_s *status_local
             }
             else if (cmd->param1 == REMOTE_CMD_PARAM_RESET) {
                 // command supported only by airdog
-#if defined(CONFIG_ARCH_BOARD_PX4FMU_V2) || defined(CONFIG_ARCH_BOARD_AIRDOG_FMU)
+#ifdef CONFIG_ARCH_BOARD_AIRDOG_FMU
                 eparam_factoryReset();
                 Bluetooth_disconnect();
                 // power off/on bluetooth module
