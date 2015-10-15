@@ -591,6 +591,10 @@ struct log_BUTT_s {
 	uint16_t mask;
 };
 
+#include <uORB/topics/sensor_status.h>
+#define LOG_SVAL_MSG 82
+#define log_SVAL_s sensor_status_s
+
 /********** SYSTEM MESSAGES, ID > 0x80 **********/
 
 /* --- TIME - TIME STAMP --- */
@@ -673,6 +677,7 @@ static const struct log_format_s log_formats[] = {
 	LOG_FORMAT(BTLK, BT_LINK_STATUS_SDLOG_TYPES, BT_LINK_STATUS_SDLOG_NAMES),
 	//LOG_FORMAT(BTCH, "IIIIIIIIIIIIII", "xT1,xT2,xT3,xT4,xT5,xT6,xT7,Rx1,Rx2,Rx3,Rx4,Rx5,Rx6,Rx7"),
 	LOG_FORMAT(BUTT, "H", "LastMask"),
+	LOG_FORMAT(SVAL, SENSOR_STATUS_SDLOG_TYPES, SENSOR_STATUS_SDLOG_NAMES),
 
 	/* system-level messages, ID >= 0x80 */
 	/* FMT: don't write format of format message, it's useless */
