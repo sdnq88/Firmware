@@ -83,7 +83,7 @@ EXPLICIT_CONFIGS	:= $(filter $(CONFIGS),$(MAKECMDGOALS))
 #
 IOCHIPs = $(foreach config,$(EXPLICIT_CONFIGS),$(shell          \
   $(MAKE) -s -f $(PX4_MK_DIR)firmware.mk                        \
-          CONFIG=$(config) WORK_DIR=$(PX4_BASE) iochip_dep 2>&1 \
+          CONFIG=$(config) WORK_DIR=$(PX4_BASE) iochip_dep      \
   | tail -1                                                     \
 ))
 
