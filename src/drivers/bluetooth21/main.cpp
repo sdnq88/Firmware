@@ -20,9 +20,11 @@ usage(const char name[])
 		"\t%s           factory one-connect\n"
 		"\t%s status\n"
 		"\t%s stop\n"
+		"\n"
+		"\t%s address tty\n"
 		"\t%s firmware-version tty\n"
 		"\n"
-		, name, name, name, name, name, name, name
+		, name, name, name, name, name, name, name, name
 	);
 }
 
@@ -39,8 +41,6 @@ int
 main(int argc, const char * argv[])
 {
 	using namespace BT::Daemon;
-	using BT::Daemon::Main::Maintenance;
-	using BT::Daemon::Main::maintenance;
 	using BT::streq;
 
 	if (argc >= 4 and streq(argv[1], "start"))
@@ -81,11 +81,11 @@ main(int argc, const char * argv[])
 	}
 	else if (argc == 3 and streq(argv[1], "firmware-version"))
 	{
-		return maintenance(argv[2], Maintenance::FIRMWARE_VERSION);
+		return Main::maintenance(argv[2], Maintenance::FIRMWARE_VERSION);
 	}
 	else if (argc == 3 and streq(argv[1], "address"))
 	{
-		return maintenance(argv[2], Maintenance::LOCAL_ADDRESS);
+		return Main::maintenance(argv[2], Maintenance::LOCAL_ADDRESS);
 	}
 	else
 	{

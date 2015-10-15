@@ -606,67 +606,73 @@ request_stop()
 	fprintf(stderr, "%s stop requested.\n", PROCESS_NAME);
 }
 
+template <typename ServiceIO>
 bool
-check_version_firmware()
+check_version_firmware(ServiceIO & service_io)
 {
-	using namespace BT::Service::Laird;
-
-	unique_file raw_dev = tty_open(DEV_BT_SVC);
-	auto trace = make_trace_handle<SERVICE_TRACE>(
-		SERVICE_TRACE_FILE, raw_dev, "bt21_io  ", "bt21_svc "
-	);
-
-	ServiceState svc;
-	auto service_io = make_service_io(trace.dev, svc);
-
 	uint32_t required_build = Params::get("A_BT_MIN_BUILD");
-
 	log_info("BT required version: x.x.x.%u.\n", required_build);
 
-	bool ok = fileno(raw_dev) > -1;
-
-	if (ok)
+	bool ok = required_build <= 0xFFFF;
+	if (ok) { ok = check_module_firmware(service_io, required_build); }
+	else
 	{
-		ok = required_build <= 0xFFFF;
-		if (ok)
-			ok = check_module_firmware(service_io, required_build);
-		else
-			log_err("Invalid A_BT_MIN_BUILD value: 0x%08x.\n",
-					required_build);
-
-		// Switch to AT mode to ease factory firmware, just in case.
-		module_factory_default(service_io, 0xbf);
+		log_err("Invalid A_BT_MIN_BUILD value: 0x%08x.\n",
+				required_build);
 	}
 
-	return ok ? 0 : 1;
+	return ok;
 }
 
+template <typename ServiceIO>
 bool
-local_address()
+local_address(ServiceIO & service_io)
 {
-	using namespace BT::Service::Laird;
-
-	unique_file raw_dev = tty_open(DEV_BT_SVC);
-	auto trace = make_trace_handle<SERVICE_TRACE>(
-		SERVICE_TRACE_FILE, raw_dev, "bt21_io  ", "bt21_svc "
-	);
-
-	ServiceState svc;
-	auto service_io = make_service_io(trace.dev, svc);
-
 	Address6 addr;
-	bool ok = fileno(raw_dev) > -1
-		and local_address_read(service_io, addr);
+	bool ok = local_address_read(service_io, addr);
 	if (ok)
 	{
 		log_info("Local address " Address6_FMT ".\n",
 				Address6_FMT_ITEMS(addr));
 	}
-	else { log_err("Failed to read local address.\n"); }
-
-	return ok ? 0 : 1;
+	else { log_err("Failed reading local address.\n"); }
+	return ok;
 }
 
+bool
+maintenance(Maintenance op)
+{
+	using namespace BT::Service::Laird;
+
+	unique_file raw_dev = tty_open(DEV_BT_SVC);
+	auto trace = make_trace_handle<SERVICE_TRACE>(
+		SERVICE_TRACE_FILE, raw_dev, "bt21_io  ", "bt21_svc "
+	);
+
+	ServiceState svc;
+	auto service_io = make_service_io(trace.dev, svc);
+
+	bool ok = fileno(raw_dev) > -1;
+	if (ok)
+	{
+		switch (op)
+		{
+		case Maintenance::FIRMWARE_VERSION:
+			ok = check_version_firmware(service_io);
+			break;
+		case Maintenance::LOCAL_ADDRESS:
+			ok = local_address(service_io);
+			break;
+		default:
+			dbg("ServiceState::maintenance() invalid argument.\n");
+			ok = false;
+		}
+
+		// Switch to AT mode to ease factory firmware upgrade.
+		module_factory_default(service_io, 0xbf);
+	}
+	return ok;
+}
 
 }
 // end of namespace Service

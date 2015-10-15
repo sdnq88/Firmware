@@ -154,19 +154,7 @@ maintenance(const char ttyname[], Maintenance op)
 	ok = running = Multiplexer::is_running();
 	if (ok)
 	{
-		switch (op)
-		{
-		case Maintenance::FIRMWARE_VERSION:
-			ok = Service::check_version_firmware();
-			break;
-		case Maintenance::LOCAL_ADDRESS:
-			ok = Service::local_address();
-			break;
-		default:
-			dbg("Main::run_svc_op() invalid argument.\n");
-			ok = false;
-		}
-
+		ok = Service::maintenance(op);
 		Multiplexer::request_stop();
 		Multiplexer::join();
 	}
