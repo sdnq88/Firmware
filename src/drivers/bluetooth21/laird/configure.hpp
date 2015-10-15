@@ -210,27 +210,27 @@ dump_s_registers(ServiceIO & io)
 
 template <typename ServiceIO>
 bool
-check_module_firmware(ServiceIO & io, uint16_t minimum_required_build) {
-	bool ok = true;
+check_module_firmware(ServiceIO & io, uint16_t minimum_required_build)
+{
 	uint8_t result[8];
 
-	if (request_module_info(io, INFORMATION_VERSION, result)) {
+	bool ok = request_module_info(io, INFORMATION_VERSION, result);
+	if (ok)
+	{
 		uint16_t build_number = (result[4] << 8) + result[5];
 		uint8_t platform_id = result[0] & 0b1111; // other bits are reserved
 		// Format similar to ATI3 command: Platform.Stack.App.Build
 		log_info("BT firmware version: %d.%d.%d.%d.\n",
 				platform_id, result[1], result[2], build_number);
-		if (build_number < minimum_required_build) {
+		if (build_number < minimum_required_build)
+		{
 			log_err("BT firmware version mismatch!"
 				" Expected %d, got %d.\n",
 				minimum_required_build, build_number);
 			ok = false;
 		}
 	}
-	else {
-		log_err("Failed getting module information!\n");
-		ok = false;
-	}
+	else { log_err("Failed getting firmware version.\n"); }
 
 	return ok;
 }

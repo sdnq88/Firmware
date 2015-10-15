@@ -358,7 +358,7 @@ request_rssi_linkquality(ServiceIO & io, const Address6 & addr, int8_t & rssi, u
 
 template <typename ServiceIO>
 bool
-request_module_info(ServiceIO & io, INFORMATION_TYPE infoType, uint8_t results[8])
+request_module_info(ServiceIO & io, INFORMATION_TYPE infoType, uint8_t (&results)[8])
 {
 	RESPONSE_INFORMATION rsp;
 	auto cmd = prefill_packet<COMMAND_INFORMATION, CMD_INFORMATION>();
