@@ -124,7 +124,7 @@ Loiter::on_activation()
             first_point[0] = NavigatorMode::parameters.first_point_lat / 1e7;
             first_point[1] = NavigatorMode::parameters.first_point_lon / 1e7;
             first_point[2] = NavigatorMode::parameters.first_point_alt;
-            if ( (first_point[0] / 10) < 1.0 || (first_point[1] / 10) < 1.0)
+            if ( (abs(first_point[0]) / 10) < 1.0 || (abs(first_point[1]) / 10) < 1.0)
             {
                 mavlink_log_critical(_mavlink_fd, "ERROR: CBP insufficient first point precision");
             }
@@ -141,7 +141,7 @@ Loiter::on_activation()
             last_point[0] = NavigatorMode::parameters.last_point_lat / 1e7;
             last_point[1] = NavigatorMode::parameters.last_point_lon / 1e7;
             last_point[2] = NavigatorMode::parameters.last_point_alt;
-            if ( (last_point[0] / 10) < 1.0 || (last_point[1] / 10) < 1.0)
+            if ( (abs(last_point[0]) / 10) < 1.0 || (abs(last_point[1]) / 10) < 1.0)
             {
                 mavlink_log_critical(_mavlink_fd, "ERROR: CBP insufficient second point precision");
             }
