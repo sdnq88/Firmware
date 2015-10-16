@@ -1094,68 +1094,6 @@ int position_estimator_inav_thread_main(int argc, char *argv[])
 		/* =====LANDING===== */
 
         /* hack by MAX */
-//        bool updated;
-//        orb_check(ORB_ID(vehicle_status), &updated);
-//        if (updated) {
-//            orb_copy(ORB_ID(vehicle_status), vehicle_status_sub, &vehicle_status);
-//            accel_filt += (sensor.accelerometer_m_s2[2] - accel_filt)*0.8f;
-//
-//            //mavlink_log_info(mavlink_fd, "Landed %d",landed);
-//            float thrust = armed.armed ? actuator.control[3] : 0.0f;
-//            if (landed) {
-//                /* We are on land */
-//                if (vehicle_status.arming_state == ARMING_STATE_ARMED) {
-//                    // Get actual thrust we are already armed
-//                    if (actuator.control[3] > params.land_thr) {
-//                        //fprintf(stdout, "Thrust: %.3f, is greater than: %.3f\n", (double)actuator.control[3], (double)params.land_thr);
-//                        landed = false;
-//                    }
-//                }
-//                else if (vehicle_status.arming_state == ARMING_STATE_STANDBY) {
-//                    //fprintf(stdout, "Landed, state: %d, thrust: %.3f\n",
-//                            //vehicle_status.arming_state, (double)thrust);
-//                }
-//            }
-//            else {
-//
-//                /*========== We are flying ==========*/
-//                if (vehicle_status.arming_state == ARMING_STATE_ARMED) {
-//
-//                    /*==regular landing==*/
-//                    if (thrust <= params.land_thr) {
-//                        /* If thrust is less or equal to landed thrust
-//                         * than we are either on the ground or falling down
-//                         */
-//                        float accepted_accel_rate = 0.3f;
-//                        if (landed_time == 0.0f) {
-//                            landed_time = t;
-//                            if (fabsf(acc[2]) > accepted_accel_rate) {
-//                                // We are sure that this is not landing, the very first velocity is too high
-//                                landed_time = 0.0f;
-//                            }
-//                        }
-//                        else {
-//                            if(t - landed_time < params.land_t * 1000000.0f) {
-//                                // We had detected a possible landing and this is the process of confirming it over time (1 sec = 1000000)
-//                               if (fabsf(acc[2]) > accepted_accel_rate) {
-//                                       landed_time = 0.0f;
-//                               }
-//                            }
-//                            else {
-//                            // Sufficient time has passed and within this time range our velocity change is negligible
-//                                landed = true;
-//                                landed_time = 0.0f;
-//                            }
-//                        }
-//                    }
-//                }
-//                else if (vehicle_status.arming_state == ARMING_STATE_STANDBY) {
-//                    if (thrust <= params.land_thr) {
-//                        landed = true;
-//                    }
-//                }
-//            }
-//        }
         bool updated;
         orb_check(vehicle_status_sub, &updated);
         if (updated) {

@@ -2287,7 +2287,7 @@ MulticopterPositionControl::task_main()
                             /* No range finder correction applied */
                             _vel_sp(2) = _params.regular_land_speed;
                         }
-                        _pos_sp(2) = _pos(2);
+                        //_pos_sp(2) = _pos(2);
 
                     }
 
