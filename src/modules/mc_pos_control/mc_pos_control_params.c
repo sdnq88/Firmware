@@ -262,7 +262,7 @@ PARAM_DEFINE_FLOAT(MPC_TILTMAX_LND, 45.0f);
  * @min 0.0
  * @group Multicopter Position Control
  */
-PARAM_DEFINE_FLOAT(LAND_REG_V, 0.9f);
+PARAM_DEFINE_FLOAT(LAND_REG_V, 1.5f);
 
 /**
  * Max xy speed during landing
