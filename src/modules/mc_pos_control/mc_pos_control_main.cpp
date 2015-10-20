@@ -2315,9 +2315,6 @@ MulticopterPositionControl::task_main()
 						}
 					}
 				}
-				else {
-					takeoff_start_time = 0;
-				}
 
                 //Ground distance correction
                 if (_params.sonar_correction_on) {
