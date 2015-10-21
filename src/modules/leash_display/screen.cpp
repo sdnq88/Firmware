@@ -856,9 +856,9 @@ void Screen::showInfo(int info, int error, int leashBattery)
         }
 
         case INFO_SENSOR_VALIDATION_OK_TO_START:
-            text[0].text = "Put AirLeash";
+            text[0].text = "Put both devices";
             text[0].font = &Font::LucideGrandeSmall;
-            text[1].text = "on your AirDog";
+            text[1].text = "on level surface";
             text[1].font = &Font::LucideGrandeSmall;
             text[2].text = "and press OK";
             text[2].font = &Font::LucideGrandeSmall;
