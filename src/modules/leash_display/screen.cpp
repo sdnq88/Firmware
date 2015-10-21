@@ -807,7 +807,7 @@ void Screen::showInfo(int info, int error, int leashBattery)
         case INFO_SENSOR_VALIDATION_SHOW_STATUS:
         {
             const char *s = nullptr;
-            bool calibrate = true;
+            unsigned char calibrate = 1; // 0 - ok, 1 - calibrate, 2 - check tilt
 
             text[0].text = "Sensor check";
             text[0].font = &Font::LucideGrandeSmall;
@@ -820,9 +820,14 @@ void Screen::showInfo(int info, int error, int leashBattery)
             {
                 s = "failed";
             }
+            else if ((0xF & error) == 4)
+            {
+            	calibrate = 2;
+            	s = "tilted";
+            }
             else
             {
-                calibrate = false;
+                calibrate = 0;
                 s = "wait";
             }
             snprintf(buffer, sizeof(buffer), "AirLeash: %s", s);
@@ -837,9 +842,14 @@ void Screen::showInfo(int info, int error, int leashBattery)
             {
                 s = "failed";
             }
+            else if ((error >> 4) == 4)
+            {
+            	calibrate = 2;
+            	s = "tilted";
+            }
             else
             {
-                calibrate = false;
+                calibrate = 0;
                 s = "wait";
             }
             snprintf(buffer2, sizeof(buffer2), "AirDog: %s", s);
@@ -847,10 +857,14 @@ void Screen::showInfo(int info, int error, int leashBattery)
             text[2].text = buffer2;
             text[2].font = &Font::LucideGrandeSmall;
 
-            if (calibrate)
+            if (calibrate == 1)
             {
                 text[3].text = "Please calibrate";
                 text[3].font = &Font::LucideGrandeTiny;
+            }
+            else if (calibrate == 2) {
+            	text[3].text = "Check tilt/calibrate";
+            	text[3].font = &Font::LucideGrandeTiny;
             }
             break;
         }

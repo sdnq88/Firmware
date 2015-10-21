@@ -175,6 +175,11 @@ Base* SensorValidation::doEvent(int orbId)
                 {
                     showStatus |= 1 << 4;
                 }
+                else if (sensorStatus == SENSOR_STATUS_WRONG)
+                {
+                	// incorrect tilt
+                	showStatus |= 4 << 4;
+                }
                 else if (sensorStatus < SENSOR_STATUS_CHECK_NEEDED)
                 {
                     // error
@@ -193,6 +198,11 @@ Base* SensorValidation::doEvent(int orbId)
                 if (sensorStatus == SENSOR_STATUS_OK)
                 {
                     showStatus |= 1;
+                }
+                else if (sensorStatus == SENSOR_STATUS_WRONG)
+                {
+                	// incorrect tilt
+                	showStatus |= 4;
                 }
                 else if (sensorStatus < SENSOR_STATUS_CHECK_NEEDED)
                 {
