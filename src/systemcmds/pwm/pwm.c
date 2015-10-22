@@ -70,8 +70,10 @@ __EXPORT int	pwm_main(int argc, char *argv[]);
 static void
 usage(const char *reason)
 {
-	if (reason != NULL)
+	if (reason != NULL) {
 		warnx("%s", reason);
+		warnx("Check CONFIG_MAX_TASK_ARGS in NuttX if you are using many arguments");
+	}
 	errx(1,
 		"usage:\n"
 		"pwm arm|disarm|rate|failsafe|disarmed|min|max|test|info|steps|stress  ...\n"
