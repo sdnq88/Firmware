@@ -96,6 +96,21 @@ DogActivityManager::check_file_state(){
 bool 
 DogActivityManager::set_activity(int32_t activity){
 
+    while(true)
+    {
+        if (!enabled_activity[activity])
+        {
+            fprintf(stderr, "This activity is disabled, skipping it\n");
+            activity++;
+            if (activity == ACTIVITY_MAX)
+                activity = 0;
+        }
+        else
+        {
+            break;
+        }
+    }
+
     fprintf(stderr, "Setting activity %d\n", activity);
 
     _current_activity = activity;
