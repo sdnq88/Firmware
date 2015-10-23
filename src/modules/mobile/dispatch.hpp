@@ -89,20 +89,28 @@ dump_unknown_command(command_id_t cmd)
 }
 
 template <typename Device>
-void
+bool
 process_one_command(bool is_mobile, Device & f, FileWriteState & receive_file)
 {
 	command_id_t cmd;
 	dbg("%s is waiting ENQ.\n", is_mobile ? "mobile" : "desktop");
-	bool ok = wait_enq(f);
-	if (not ok) { return; }
+	enq_result wait_result = wait_enq(f);
+    switch (wait_result)
+    {
+        case enq_result::notOk:
+            return true;
+            break;
+        case enq_result::exit:
+            return false;
+            break;
+    }
 
-	ok = read_command(f, cmd);
+	bool ok = read_command(f, cmd);
 	if (not ok)
 	{
 		reply_command_result(f, ERRCODE_TIMEOUT, cmd);
 		dump_unknown_command(cmd);
-		return;
+		return true;
 	}
 
 	bool handled = true;
@@ -141,7 +149,7 @@ process_one_command(bool is_mobile, Device & f, FileWriteState & receive_file)
 		}
 	}
 
-	if (handled) { return; }
+	if (handled) { return true; }
 
 	switch (cmd)
 	{
