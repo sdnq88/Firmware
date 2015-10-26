@@ -2298,6 +2298,8 @@ MulticopterPositionControl::task_main()
 						&& _control_mode.flag_control_position_enabled
 						&& _pos_sp_triplet.current.valid
 						&& _pos_sp_triplet.current.type == SETPOINT_TYPE_TAKEOFF) {
+                    // reseting landing time
+                    landed_time = 0;
 					if (_pos(2) - _pos_sp(2) > 0) {
 						if (_vel_sp.data[2] < -_params.takeoff_speed){
 							_vel_sp.data[2] = -_params.takeoff_speed;
@@ -2785,39 +2787,52 @@ float MulticopterPositionControl::landing_speed_correction() {
         }
         // Don't decrease speed more than land_speed_min
         else if(landing_coeff < 1.1f) {
-            landing_coeff = 0.999f;
+            landing_coeff = 1.0f;
         }
 
         if (landing_coeff < 1.1f) {
             /*
-             * This section waits 1 second after sonar lowered speed to minimal
+             * This section waits some time (calculated based on parameters) after sonar lowered speed to minimal
              * and then triggers max landing speed back to stop motors faster
              */
             was_corrected_till_end = true;
             if (landed_time == 0) {
                 landed_time = hrt_absolute_time();
             }
-            else if (hrt_absolute_time() - landed_time > 1500000) {
+            else if (hrt_absolute_time() - landed_time > (int64_t)(_params.safe_land_h/_params.land_speed_min*1000000)) {
                 landing_coeff = _params.land_speed_max/_params.land_speed_min;
-                // reseting landing time
-                landed_time = 0;
+            }
+            else
+            {
+                DOG_PRINT("[MC_POS] time to land %lld\n",
+                         (int64_t)(_params.safe_land_h/_params.land_speed_min*1000000));
             }
         }
         else
         {
             was_corrected_till_end = false;
+            landed_time = 0;
         }
-        DOG_PRINT("[MC_POS] lid valid, current land speed %0.4f\n",
-                (double) (landing_coeff * _params.land_speed_min));;
+        DOG_PRINT("[MC_POS] lid valid, current land speed %0.4f land coeff %.4f land_time %lld remained %lld\n",
+                (double) (landing_coeff * _params.land_speed_min),
+                (double) landing_coeff,
+                landed_time,
+                hrt_absolute_time() - landed_time);
     }
     else {
         // Distance between home and current position = sqrt( (x_1 - x_2)^2 + (y_1 - y_2)^2 )
         float dist_between_points = sqrtf(pow((_pos(0) - _home_pos.x),2) + pow((_pos(1) - _home_pos.y), 2));
         float till_ground = _home_pos.z - _pos(2);
-        if (was_corrected_till_end &&
-                hrt_absolute_time() - landed_time > 1500000)
+        if (was_corrected_till_end)
         {
-            landing_coeff = _params.land_speed_max/_params.land_speed_min;
+            if(hrt_absolute_time() - landed_time > (int64_t)(_params.safe_land_h/_params.land_speed_min*1000000))
+            {
+                landing_coeff = _params.land_speed_max/_params.land_speed_min;
+            }
+            else
+            {
+                landing_coeff = 1.0f;
+            }
         }
         else if (dist_between_points < 5.0f) // then use home altitude to validate lidar
         {
@@ -2830,11 +2845,11 @@ float MulticopterPositionControl::landing_speed_correction() {
         {
             landing_coeff = _params.regular_land_speed/_params.land_speed_min;
         }
-        DOG_PRINT("[MC_POS] current land speed %0.4f between points %.4f till ground %.4f _pos(2) %.4f\n",
+        DOG_PRINT("[MC_POS] lid NOT valid, current land speed %0.4f land coeff %.4f land_time %lld remained %lld\n",
                 (double) (landing_coeff * _params.land_speed_min),
-                (double) dist_between_points,
-                (double) till_ground,
-                (double) _pos(2));
+                (double) landing_coeff,
+                landed_time,
+                hrt_absolute_time() - landed_time);
     }
     return landing_coeff;
 }
