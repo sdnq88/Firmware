@@ -244,7 +244,7 @@ PARAM_DEFINE_FLOAT(INAV_FLOW_Q_MIN, 0.5f);
  * @unit s
  * @group Position Estimator INAV
  */
-PARAM_DEFINE_FLOAT(LAND_VAL_TIME, 3.0f);
+PARAM_DEFINE_FLOAT(LAND_VAL_TIME, 1.0f);
 
 /**
  * Land detector altitude dispersion threshold
