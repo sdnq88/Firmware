@@ -99,10 +99,10 @@ VtolAttitudeControl::VtolAttitudeControl() :
 	memset(&_actuators_mc_in, 0, sizeof(_actuators_mc_in));
 	memset(&_actuators_fw_in, 0, sizeof(_actuators_fw_in));
 	memset(&_armed, 0, sizeof(_armed));
-	memset(&_local_pos,0,sizeof(_local_pos));
-	memset(&_airspeed,0,sizeof(_airspeed));
-	memset(&_batt_status,0,sizeof(_batt_status));
-	memset(&_vehicle_cmd,0, sizeof(_vehicle_cmd));
+	memset(&_local_pos, 0, sizeof(_local_pos));
+	memset(&_airspeed, 0, sizeof(_airspeed));
+	memset(&_batt_status, 0, sizeof(_batt_status));
+	memset(&_vehicle_cmd, 0, sizeof(_vehicle_cmd));
 
 	_params.idle_pwm_mc = PWM_LOWEST_MIN;
 	_params.vtol_motor_count = 0;
@@ -127,12 +127,15 @@ VtolAttitudeControl::VtolAttitudeControl() :
 	if (_params.vtol_type == 0) {
 		_tailsitter = new Tailsitter(this);
 		_vtol_type = _tailsitter;
+
 	} else if (_params.vtol_type == 1) {
 		_tiltrotor = new Tiltrotor(this);
 		_vtol_type = _tiltrotor;
+
 	} else if (_params.vtol_type == 2) {
 		_standard = new Standard(this);
 		_vtol_type = _standard;
+
 	} else {
 		_task_should_exit = true;
 	}
@@ -264,7 +267,8 @@ void VtolAttitudeControl::vehicle_rates_sp_fw_poll()
 * Check for airspeed updates.
 */
 void
-VtolAttitudeControl::vehicle_airspeed_poll() {
+VtolAttitudeControl::vehicle_airspeed_poll()
+{
 	bool updated;
 	orb_check(_airspeed_sub, &updated);
 
@@ -307,7 +311,8 @@ VtolAttitudeControl::vehicle_attitude_poll()
 * Check for battery updates.
 */
 void
-VtolAttitudeControl::vehicle_battery_poll() {
+VtolAttitudeControl::vehicle_battery_poll()
+{
 	bool updated;
 	orb_check(_battery_status_sub, &updated);
 
@@ -507,6 +512,7 @@ void VtolAttitudeControl::publish_att_sp()
 	if (_v_att_sp_pub != nullptr) {
 		/* publish the attitude setpoint */
 		orb_publish(ORB_ID(vehicle_attitude_setpoint), _v_att_sp_pub, &_v_att_sp);
+
 	} else {
 		/* advertise and publish */
 		_v_att_sp_pub = orb_advertise(ORB_ID(vehicle_attitude_setpoint), &_v_att_sp);
@@ -732,11 +738,11 @@ VtolAttitudeControl::start()
 
 	/* start the task */
 	_control_task = px4_task_spawn_cmd("vtol_att_control",
-				       SCHED_DEFAULT,
-				       SCHED_PRIORITY_MAX - 10,
-				       2048,
-				       (main_t)&VtolAttitudeControl::task_main_trampoline,
-				       nullptr);
+					   SCHED_DEFAULT,
+					   SCHED_PRIORITY_MAX - 10,
+					   2048,
+					   (main_t)&VtolAttitudeControl::task_main_trampoline,
+					   nullptr);
 
 	if (_control_task < 0) {
 		warn("task start failed");
