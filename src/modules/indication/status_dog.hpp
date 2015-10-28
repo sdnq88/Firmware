@@ -10,6 +10,7 @@
 
 #include <uORB/uORB.h>
 #include <uORB/topics/bt_state.h>
+#include <uORB/topics/frame_button.h>
 #include <uORB/topics/vehicle_status.h>
 
 #include "indication.h"
@@ -25,6 +26,7 @@ static int led_pattern = -1;
 
 static int vehicle_status_sub;
 static int bt_state_sub;
+static int frame_button_sub;
 static TONE_ALARM_HANDLE tone_alarm_handle;
 
 static GLOBAL_BT_STATE bt_global_state = INITIALIZING;
@@ -146,6 +148,7 @@ init()
 
     vehicle_status_sub = orb_subscribe(ORB_ID(vehicle_status));
     bt_state_sub = orb_subscribe(ORB_ID(bt_state));
+    frame_button_sub = orb_subscribe(ORB_ID(frame_button_state));
 
     // get current data
     bt_state_s bt_state;
@@ -256,11 +259,45 @@ update(hrt_abstime now)
             }
         }
     }
+
+    // check frame button
+    {
+        bool updated = false;
+        frame_button_s frame_button;
+
+        orb_check(frame_button_sub, &updated);
+        if (updated) {
+            orb_copy(ORB_ID(frame_button_state), frame_button_sub, &frame_button);
+
+            switch (frame_button.state)
+            {
+                case SINGLE_CLICK:
+                    tone_alarm_play(tone_alarm_handle, TONE_BGC_ONOFF);
+                    break;
+
+                case DOUBLE_CLICK:
+                    tone_alarm_play(tone_alarm_handle, TONE_BGC_ACCEL_CALIBRATION);
+                    break;
+
+                case TRIPLE_CLICK:
+                    tone_alarm_play(tone_alarm_handle, TONE_BGC_GYRO_CALIBRATION);
+                    break;
+
+                case LONG_KEYPRESS:
+                    tone_alarm_play(tone_alarm_handle, TONE_PAIRING_ONOFF);
+                    break;
+
+                default:
+                    break;
+            }
+        }
+    }
 }
 
 void
 done()
 {
+    orb_unsubscribe(frame_button_sub);
     orb_unsubscribe(vehicle_status_sub);
     orb_unsubscribe(bt_state_sub);
     tone_alarm_close(tone_alarm_handle);
