@@ -40,3 +40,8 @@ tags
 *.orig
 *xcodeproj*
 screenlog.*
+dev.config
+dev.creator
+dev.creator.user
+dev.files
+dev.includes

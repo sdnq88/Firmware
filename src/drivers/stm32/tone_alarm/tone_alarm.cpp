@@ -375,6 +375,10 @@ ToneAlarm::ToneAlarm() :
     _default_tunes[TONE_TARGET_POS_INVALID] = "MBT200a8b8a8b8P";
     _default_tunes[TONE_LANDING1] = "MFT100O3g#4";		// TONE_LANDING
     _default_tunes[TONE_LANDING2] = "MFT100O4d4";		// TONE_LANDING
+    _default_tunes[TONE_BGC_ONOFF] = "MFT100O3b16";
+    _default_tunes[TONE_BGC_ACCEL_CALIBRATION] = "MFT100O3b16f16";
+    _default_tunes[TONE_BGC_GYRO_CALIBRATION] = "MFT100O3b16f16O4b8";
+    _default_tunes[TONE_PAIRING_ONOFF] = "MFT100O3b4";
 
     _tune_names[TONE_DEV_STARTUP_TUNE] = "dev_startup"; // startup tune for dev firmwares
 	_tune_names[TONE_STARTUP_TUNE] = "startup";			// startup tune
@@ -400,6 +404,10 @@ ToneAlarm::ToneAlarm() :
     _tune_names[TONE_TARGET_POS_INVALID] = "target_pos_invalid";
     _tune_names[TONE_LANDING1] = "landing1";
     _tune_names[TONE_LANDING2] = "landing2";
+    _tune_names[TONE_BGC_ONOFF] = "bgc_onoff";
+    _tune_names[TONE_BGC_ACCEL_CALIBRATION] = "bgc_accel_calibration";
+    _tune_names[TONE_BGC_GYRO_CALIBRATION] = "bgc_gyro_calibration";
+    _tune_names[TONE_PAIRING_ONOFF] = "bgc_pairing_onoff";
 }
 
 ToneAlarm::~ToneAlarm()
