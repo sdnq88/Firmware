@@ -7,6 +7,12 @@ namespace BT
 namespace Daemon
 {
 
+enum class Maintenance
+{
+	FIRMWARE_VERSION,
+	LOCAL_ADDRESS,
+};
+
 namespace Main
 {
 
@@ -29,7 +35,7 @@ void
 request_stop();
 
 int
-check_version_firmware(const char ttyname[]);
+maintenance(const char ttyname[], Maintenance op);
 
 }
 // end of namespace Main
@@ -86,7 +92,7 @@ void
 request_stop();
 
 bool
-check_version_firmware();
+maintenance(Maintenance op);
 
 }
 // end of namespace Service

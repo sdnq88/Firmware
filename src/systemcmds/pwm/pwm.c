@@ -70,8 +70,10 @@ __EXPORT int	pwm_main(int argc, char *argv[]);
 static void
 usage(const char *reason)
 {
-	if (reason != NULL)
+	if (reason != NULL) {
 		warnx("%s", reason);
+		warnx("Check CONFIG_MAX_TASK_ARGS in NuttX if you are using many arguments");
+	}
 	errx(1,
 		"usage:\n"
 		"pwm arm|disarm|rate|failsafe|disarmed|min|max|test|info|steps|stress  ...\n"
@@ -106,9 +108,10 @@ usage(const char *reason)
 		"    -d <device>            PWM output device (defaults to " PWM_OUTPUT_DEVICE_PATH ")\n"
 		"\n"
 		"  stress ...               Stress test the motors by supplying low then high pwm\n"
-		"    [-c <channels>]        Supply channels (e.g. 1234)\n"
-		"    [-m <chanmask> ]       Directly supply channel mask (e.g. 0xF)\n"
+		"    [-c <channels>]        All tested channels. Including stressed channels!\n"
+		"    [-m <chanmask>]        Tested channel mask. Including stressed channels!\n"
 		"    [-a]                   Configure all outputs\n"
+		"    -s <stressed_channels> Supply which channels will be stressed\n"
 		"    -l <low pwm value>     Low pwm value\n"
 		"    -h <high pwm value>    High pwm value\n"
 		"    [-n <cycles>]          Number of cycles to repeat the test (default: 2 cycles)\n"
@@ -130,6 +133,7 @@ pwm_main(int argc, char *argv[])
 	int ret;
 	char *ep;
 	uint32_t set_mask = 0;
+	uint32_t stressed_mask = 0;
 	unsigned group;
 	unsigned long channels;
 	unsigned single_ch = 0;
@@ -142,7 +146,7 @@ pwm_main(int argc, char *argv[])
 	if (argc < 1)
 		usage(NULL);
 
-	while ((ch = getopt(argc-1, &argv[1], "d:vc:g:m:ap:r:l:h:n:t:")) != EOF) {
+	while ((ch = getopt(argc-1, &argv[1], "d:vc:g:m:ap:r:l:h:n:t:s:")) != EOF) {
 		switch (ch) {
 
 		case 'd':
@@ -223,6 +227,18 @@ pwm_main(int argc, char *argv[])
 				usage("bad phase time provided");
 			}
 			break;
+		case 's':
+			channels = strtoul(optarg, &ep, 0);
+			if (*ep != '\0') {
+				usage("bad stressed channel list provided");
+			}
+			while ((single_ch = channels % 10)) {
+
+				stressed_mask |= 1<<(single_ch-1);
+				channels /= 10;
+			}
+			break;
+
 		default:
 			break;
 		}
@@ -728,6 +744,12 @@ pwm_main(int argc, char *argv[])
 		if (set_mask == 0) {
 			usage("no channels set");
 		}
+		if (stressed_mask == 0) {
+			usage("no stressed channels supplied");
+		}
+		if ((stressed_mask | set_mask) != set_mask) {
+			usage("stressed channel not among usual channels");
+		}
 		if (low_pwm == 0 || high_pwm == 0)
 			usage("no low or high PWM value provided");
 
@@ -773,9 +795,17 @@ pwm_main(int argc, char *argv[])
 			}
 			for (unsigned i = 0; i < servo_count; i++) {
 				if (set_mask & 1<<i) {
-					ret = ioctl(fd, PWM_SERVO_SET(i), pwm_value);
-					if (ret != OK) {
-						err(1, "PWM_SERVO_SET(%d)", i);
+					if (stressed_mask & 1<<i) {
+						ret = ioctl(fd, PWM_SERVO_SET(i), pwm_value);
+						if (ret != OK) {
+							err(1, "PWM_SERVO_SET(%d)", i);
+						}
+					}
+					else { // Always use the low value for unstressed motors
+						ret = ioctl(fd, PWM_SERVO_SET(i), low_pwm);
+						if (ret != OK) {
+							err(1, "PWM_SERVO_SET(%d)", i);
+						}
 					}
 				}
 			}

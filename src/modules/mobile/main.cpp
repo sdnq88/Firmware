@@ -90,7 +90,7 @@ daemon(int argc, char *argv[])
 	fprintf(stderr, "%s started.\n", argv[0]);
 
 	while (ds.daemon_should_run)
-		process_one_command(is_mobile, f, write_state);
+		ds.daemon_should_run = process_one_command(is_mobile, f, write_state);
 
 	fprintf(stderr, "%s stopped.\n", argv[0]);
 	ds.daemon_running = false;

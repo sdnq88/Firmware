@@ -20,6 +20,10 @@ enum
     ACTIVITY_CUSTOM,
     ACTIVITY_MAX
 };
+const char enabled_activity[ACTIVITY_MAX] =
+{
+    1,0,0,1,0,0,1,0,0,1
+};
 
 extern const char* activityNames[];
 

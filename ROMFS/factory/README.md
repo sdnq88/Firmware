@@ -24,6 +24,7 @@ Therefore each command output is followed by the sequence.
 
 * [BGC](#bgc)
 * [BT740](#bt740)
+  * [BT740 address](#bt740-address)
 * [GPS](#gps)
 * [Sensors](#sensors)
 
@@ -32,6 +33,7 @@ Therefore each command output is followed by the sequence.
 
 * [ADC](#adc)
 * [BT740](#bt740)
+  * [BT740 address](#bt740-address)
 * [eMMC](#emmc)
 * [FRAM](#fram)
 * [GPS](#gps)
@@ -167,6 +169,8 @@ nsh>
 
 ### BT740
 
+It also does module's **factory reset**.
+
 Here are two commands required:
 * `sh /etc/extras/settings`
 * `sh /etc/extras/bt740`
@@ -205,6 +209,29 @@ OK
 nsh>
 ```
 
+#### BT740 address
+
+It also does module's **factory reset**.
+
+Here are two commands required:
+* `sh /etc/extras/settings`
+* `sh /etc/extras/bt740-address`
+
+Output:
+```
+nsh> sh /etc/extras/settings
+nsh> sh /etc/extras/bt740
+---
+bluetooth21 address /dev/ttyS1
+bt21_io starting ...
+bt21_io started.
+bluetooth21: 1401321238: Local address 00:16:a4:0c:97:b1.
+bt21_io stop requested.
+bt21_io stopped.
+===
+OK
+nsh>
+```
 
 ### eMMC
 

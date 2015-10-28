@@ -6,6 +6,7 @@
 #include <cstdio>
 
 #include "daemon.hpp"
+#include "debug.hpp"
 
 namespace BT
 {
@@ -132,7 +133,7 @@ request_stop()
 }
 
 int
-check_version_firmware(const char ttyname[])
+maintenance(const char ttyname[], Maintenance op)
 {
 	if (is_running())
 	{
@@ -153,15 +154,14 @@ check_version_firmware(const char ttyname[])
 	ok = running = Multiplexer::is_running();
 	if (ok)
 	{
-		ok = Service::check_version_firmware();
-
+		ok = Service::maintenance(op);
 		Multiplexer::request_stop();
 		Multiplexer::join();
 	}
 
 	running = false;
 
-	return ok ;
+	return ok ? 0 : 1;
 }
 
 }

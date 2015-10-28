@@ -99,6 +99,7 @@
 #include <uORB/topics/mavlink_stats.h>
 #include <uORB/topics/target_gps_raw.h>
 #include <uORB/topics/bt21_laird.h>
+#include <uORB/topics/sensor_status.h>
 
 #include <systemlib/systemlib.h>
 #include <systemlib/param/param.h>
@@ -227,6 +228,7 @@ PARAM_DEFINE_INT32(SDLOG_M_SENS, 20);
 PARAM_DEFINE_INT32(SDLOG_M_SERVO, -1);
 PARAM_DEFINE_INT32(SDLOG_M_SYSPOW, -1);
 PARAM_DEFINE_INT32(SDLOG_M_TRGPOS, 10);
+PARAM_DEFINE_INT32(SDLOG_M_SENS_VAL, 5);
 #else
 PARAM_DEFINE_INT32(SDLOG_M_ACTOUT, 10);
 PARAM_DEFINE_INT32(SDLOG_M_ATT, 10);
@@ -256,6 +258,7 @@ PARAM_DEFINE_INT32(SDLOG_M_SENS, 20);
 PARAM_DEFINE_INT32(SDLOG_M_SERVO, -1);
 PARAM_DEFINE_INT32(SDLOG_M_SYSPOW, 2);
 PARAM_DEFINE_INT32(SDLOG_M_TRGPOS, 30);
+PARAM_DEFINE_INT32(SDLOG_M_SENS_VAL, 5);
 #endif
 
 
@@ -1050,6 +1053,7 @@ int sdlog2_thread_main(int argc, char *argv[])
         struct bt_evt_status_s bt_evt_status;
         struct bt_link_status_s bt_link_status;
         //struct bt_channels_s bt_channels;
+        struct sensor_status_s sensor_status;
 	} buf;
 
 	memset(&buf, 0, sizeof(buf));
@@ -1111,6 +1115,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 			struct log_BTSO_s log_BTSO;
 			struct log_BTLK_s log_BTLK;
 			struct log_BUTT_s log_BUTT;
+			struct log_SVAL_s log_SVAL;
 		} body;
 	} log_msg = {
 		LOG_PACKET_HEADER_INIT(0)
@@ -1162,6 +1167,7 @@ int sdlog2_thread_main(int argc, char *argv[])
         int bt_evt_status_sub;
         int bt_link_status_sub;
         //int bt_channels_sub;
+        int sensor_status_sub;
 	} subs;
 
 	int sub_freq;
@@ -1217,6 +1223,7 @@ int sdlog2_thread_main(int argc, char *argv[])
 	LOG_ORB_PARAM_SUBSCRIBE(subs.bt_evt_status_sub, ORB_ID(bt_evt_status), "SDLOG_M_BT_EVTS", sub_freq)
 	LOG_ORB_PARAM_SUBSCRIBE(subs.bt_link_status_sub, ORB_ID(bt_link_status), "SDLOG_M_BT_LINK", sub_freq)
 	//LOG_ORB_PARAM_SUBSCRIBE(subs.bt_channels_sub, ORB_ID(bt_channels), "SDLOG_M_BT_CH", sub_freq)
+	LOG_ORB_PARAM_SUBSCRIBE(subs.sensor_status_sub, ORB_ID(sensor_status), "SDLOG_M_SENS_VAL", sub_freq)
 
 	int butt_fd = open(SDLOG_BUTT_DEVICE_PATH , O_RDONLY | O_NONBLOCK);
 	pressed_mask_t butt_buffer[SDLOG_BUTT_SCAN_BUFFER_N_ITEMS];
@@ -2009,6 +2016,12 @@ int sdlog2_thread_main(int argc, char *argv[])
 			log_msg.msg_type = LOG_BTLK_MSG;
 			log_msg.body.log_BTLK = buf.bt_link_status;
 			LOGBUFFER_WRITE_AND_COUNT(BTLK);
+		}
+
+		if (copy_if_updated(ORB_ID(sensor_status), subs.sensor_status_sub, &buf.sensor_status)) {
+			log_msg.msg_type = LOG_SVAL_MSG;
+			log_msg.body.log_SVAL = buf.sensor_status;
+			LOGBUFFER_WRITE_AND_COUNT(SVAL);
 		}
 
 		butt_read_ret = read(butt_fd, butt_buffer, sizeof(butt_buffer));

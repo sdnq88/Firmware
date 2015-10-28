@@ -166,7 +166,7 @@ Leashed::execute_vehicle_command() {
 		}
 	}
     // For range finder min altitude correlation with up/down
-    NavigatorMode::desired_alt_above_ground = 0.0f; //TODO [Max]: function to get current follow altitude
-    update_range_finder_alt();
+    //NavigatorMode::desired_alt_above_ground = 0.0f; //TODO [Max]: function to get current follow altitude
+    //update_range_finder_alt();
 
 }

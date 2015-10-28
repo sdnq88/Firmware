@@ -389,6 +389,7 @@ void validate_attitude(const Variance &pitch_variance, const Variance &roll_vari
 	}
 	else {
 		sens_status.attitude_status = SENSOR_STATUS_OK;
+		warnx("Attitude check ok.");
 		DOG_PRINT("Expected variance: %.6f, pitch: %.6f,\n\troll: %.6f, yaw: %.6f\n",
 				(double) attitude_variance_threshold, (double) pitch_variance.get_variance(),
 				(double) roll_variance.get_variance(), (double) yaw_variance.get_variance());

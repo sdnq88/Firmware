@@ -530,7 +530,7 @@ void PWMIN::_publish(uint16_t status, uint32_t period, uint32_t pulse_width)
     data.timestamp = pwmin_report.timestamp;
     data.error_count = error_count;
 
-    if (pulse_width < MINIMAL_DISTANCE || pulse_width > MAXIMAL_DISTANCE) {
+    if (data.distance < data.minimum_distance || data.distance > data.maximum_distance) {
         data.valid = false;
     } else {
         data.valid = true;

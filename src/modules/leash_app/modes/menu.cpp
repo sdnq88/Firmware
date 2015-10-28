@@ -345,16 +345,40 @@ void Menu::buildActivityMenu()
 {
     if (key_pressed(BTN_RIGHT))
     {
-        if (++current_activity == ACTIVITY_MAX)
+        current_activity++;
+        while(true)
         {
-            current_activity = 0;
+            if (current_activity == ACTIVITY_MAX)
+            {
+                current_activity = 0;
+            }
+            if (!enabled_activity[current_activity])
+            {
+                current_activity++;
+            }
+            else
+            {
+                break;
+            }
         }
     }
     if (key_pressed(BTN_LEFT))
     {
-        if (--current_activity == -1)
+        current_activity--;
+        while(true)
         {
-            current_activity = ACTIVITY_MAX-1;
+            if (current_activity == -1)
+            {
+                current_activity = ACTIVITY_MAX-1;
+            }
+            if (!enabled_activity[current_activity])
+            {
+                current_activity--;
+            }
+            else
+            {
+                break;
+            }
         }
     }
 }

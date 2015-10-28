@@ -46,6 +46,7 @@ def addFont(path):
 	filelist.append(outpath + "dot" + ".png")
 	filelist.append(outpath + "question" + ".png")
 	filelist.append(outpath + "colon" + ".png")
+	filelist.append(outpath + "slash" + ".png")
 
 addFont("screens/fonts/LucidaGrande_30")
 addFont("screens/fonts/LucidaGrande_15")

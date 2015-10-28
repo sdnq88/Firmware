@@ -3,23 +3,39 @@
 #include "protocol.h"
 #include "io_util.hpp"
 
+enum class enq_result{
+    notOk = 0,
+    ok = 1,
+    exit = 2,
+};
+
 template <typename Device>
-bool
+enq_result
 wait_enq(Device & d) {
+    enq_result result = enq_result::ok;
 	char ch = 0;
 	ssize_t s = read(d, &ch, 1);
 	while (ch != ENQ)
 	{
 		if (s == -1)
 		{
-			if (errno != ETIMEDOUT) { dbg_perror("wait_enq"); }
-			return false;
+            if (errno == ENOTCONN)
+            {
+                dbg("Nothing connected, thread should exit\n");
+                result = enq_result::exit;
+            }
+            else
+            {
+                if (errno != ETIMEDOUT) { dbg_perror("wait_enq"); }
+                result = enq_result::notOk;
+            }
+            break;
 		}
 		if (s > 0) { dbg("Discarded char %02x\n", (int)ch); }
 		ch = 0;
 		s = read(d, &ch, 1);
 	}
-	return true;
+	return result;
 }
 
 template <typename Device>

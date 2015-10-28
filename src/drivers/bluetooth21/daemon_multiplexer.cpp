@@ -124,6 +124,8 @@ daemon()
 	started = running = false;
 	fprintf(stderr, "%s stopped.\n", PROCESS_NAME);
 
+	tty_switch_ctsrts(fileno(raw_dev), false);
+
 	return nullptr;
 }
 
