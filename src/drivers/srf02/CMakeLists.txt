@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2014 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2015 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,16 +30,14 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
-
-#
-# Subscriber Example Application
-#
-
-MODULE_COMMAND	= subscriber
-
-SRCS		= subscriber_main.cpp \
-		  subscriber_start_nuttx.cpp \
-		  subscriber_example.cpp \
-		  subscriber_params.c
-
-MODULE_STACKSIZE = 2400
+px4_add_module(
+	MODULE drivers__srf02
+	MAIN srf02
+	COMPILE_FLAGS
+		-Os
+	SRCS
+		srf02.cpp
+	DEPENDS
+		platforms__common
+	)
+# vim: set noet ft=cmake fenc=utf-8 ff=unix : 

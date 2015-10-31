@@ -586,6 +586,34 @@ PARAM_DEFINE_FLOAT(CAL_ACC2_YSCALE, 1.0f);
 PARAM_DEFINE_FLOAT(CAL_ACC2_ZSCALE, 1.0f);
 
 /**
+ * Primary accel ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_ACC_PRIME, 0);
+
+/**
+ * Primary gyro ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_GYRO_PRIME, 0);
+
+/**
+ * Primary mag ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_MAG_PRIME, 0);
+
+/**
+ * Primary baro ID
+ *
+ * @group Sensor Calibration
+ */
+PARAM_DEFINE_INT32(CAL_BARO_PRIME, 0);
+
+/**
  * Differential pressure sensor offset
  *
  * The offset (zero-reading) in Pascal
@@ -1810,7 +1838,6 @@ PARAM_DEFINE_INT32(BAT_V_SCALE_IO, 10000);
 /**
  * Scaling factor for battery voltage sensor on FMU v2.
  *
- * @board CONFIG_ARCH_BOARD_PX4FMU_V2
  * @group Battery Calibration
  */
 PARAM_DEFINE_FLOAT(BAT_V_SCALING, -1.0f);
@@ -1941,6 +1968,15 @@ PARAM_DEFINE_INT32(RC_MAP_MODE_SW, 0);
  * @group Radio Switches
  */
 PARAM_DEFINE_INT32(RC_MAP_RETURN_SW, 0);
+
+/**
+ * Rattitude switch channel mapping.
+ *
+ * @min 0
+ * @max 18
+ * @group Radio Switches
+ */
+PARAM_DEFINE_INT32(RC_MAP_RATT_SW, 0);
 
 /**
  * Posctl switch channel mapping.
@@ -2104,6 +2140,23 @@ PARAM_DEFINE_FLOAT(RC_ASSIST_TH, 0.25f);
  *
  */
 PARAM_DEFINE_FLOAT(RC_AUTO_TH, 0.75f);
+
+/**
+ * Threshold for selecting rattitude mode
+ *
+ * 0-1 indicate where in the full channel range the threshold sits
+ * 		0 : min
+ * 		1 : max
+ * sign indicates polarity of comparison
+ * 		positive : true when channel>th
+ * 		negative : true when channel<th
+ *
+ * @min -1
+ * @max 1
+ * @group Radio Switches
+ *
+ */
+PARAM_DEFINE_FLOAT(RC_RATT_TH, 0.5f);
 
 /**
  * Threshold for selecting posctl mode

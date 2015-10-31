@@ -1,6 +1,6 @@
 ############################################################################
 #
-#   Copyright (c) 2014 PX4 Development Team. All rights reserved.
+#   Copyright (c) 2015 PX4 Development Team. All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions
@@ -30,11 +30,28 @@
 # POSSIBILITY OF SUCH DAMAGE.
 #
 ############################################################################
+if(${OS} STREQUAL "nuttx")
+	list(APPEND MODULE_CFLAGS -Wframe-larger-than=6500)
+elseif(${OS} STREQUAL "posix")
+	list(APPEND MODULE_CFLAGS -Wno-error)
+	# add matrix tests
+	add_subdirectory(matrix)
+endif()
 
-#
-# Build position estimator
-#
+# use custom matrix lib instead of Eigen
+add_definitions(-DUSE_MATRIX_LIB)
 
-MODULE_COMMAND		= matlab_csv_serial
 
-SRCS		= matlab_csv_serial.c
+px4_add_module(
+	MODULE modules__local_position_estimator
+	MAIN local_position_estimator
+	STACK 9216
+	COMPILE_FLAGS ${MODULE_CFLAGS}
+	SRCS
+		local_position_estimator_main.cpp
+		BlockLocalPositionEstimator.cpp
+		params.c
+	DEPENDS
+		platforms__common
+	)
+# vim: set noet ft=cmake fenc=utf-8 ff=unix : 
